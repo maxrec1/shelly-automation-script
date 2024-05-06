@@ -7,19 +7,37 @@
   ////////////------------------------------------change as needed----------------------------------////////////
   
   // On//Off daily schedule for each day 
-  var onOffTimes = {
-      "Monday": [{ on: "08:30", off: "16:00" }, { on: "19:00", off: "23:59" }],
-      "Tuesday": [{ on: "11:15", off: "12:00" }, { on: "15:00", off: "18:17" }],
-      "Wednesday": [],
-      "Thursday": [{ on: "08:30", off: "10:00" }, { on: "13:00", off: "23:00" }],
-      "Friday": [{ on: "11:15", off: "12:00" }, { on: "15:00", off: "17:00" }],
-      "Saturday": [{ on: "12:00", off: "13:00" }, { on: "21:00", off: "22:00" }],
-      "Sunday": [{ on: "12:00", off: "13:00" }, { on: "21:00", off: "22:00" }]
-  };
+var onOffTimes = {
+  "Monday": [{ on: "08:30", off: "16:00" }, { on: "19:00", off: "23:59" }],
+  "Tuesday": [{ on: "11:15", off: "12:00" }, { on: "15:00", off: "18:17" }],
+  "Wednesday": [],
+  "Thursday": [{ on: "08:30", off: "10:00" }, { on: "13:00", off: "23:00" }],
+  "Friday": [{ on: "11:15", off: "12:00" }, { on: "15:00", off: "17:00" }],
+  "Saturday": [{ on: "12:00", off: "13:00" }, { on: "21:00", off: "22:00" }],
+  "Sunday": [{ on: "12:00", off: "13:00" }, { on: "21:00", off: "22:00" }]
+};
+
+// Function to log hours for a specific day
+function logHours(day) {
+  if (day in onOffTimes) {
+    if (onOffTimes[day].length === 0) {
+      console.log("No hours logged for " + day + ".");
+    } else {
+      console.log(day + " hours:");
+      onOffTimes[day].forEach(function(timeSlot, index) {
+        console.log("Slot " + (index + 1) + "= " + timeSlot.on + " - " + timeSlot.off);
+      });
+    }
+  } else {
+    console.log("No hours recorded for " + day + ".");
+  }
+}  
   
   var offDays = ["Saturday", "Sunday"]; // Days device is powered off.
   var scheduleString = "0 */1 * * * *"; // Run the script every  X minutes, change frecuancy here or directly in "Schedules"
   var enableLogs = true; // Enable console logs.
+  
+  
   
   //*************************************************************************************************///
   
@@ -232,7 +250,8 @@ function scheduledTask() {
                         console.log("Current Date:", currentDate);
                         console.log("Current Time:", currentTime);
                         console.log("Day of the week:", weekDay);
-                    }
+                        logHours(weekDay);
+                                        }
 
                     var holidaysURL =
                         "https://openholidaysapi.org/PublicHolidays?countryIsoCode=AT&languageIsoCode=DE&validFrom=" +
