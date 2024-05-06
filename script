@@ -319,9 +319,7 @@
                                     for (let i = 0; i < onOffTimes[weekDay].length; i++) {
                                         if (currentTime >= onOffTimes[weekDay][i].on && currentTime <= onOffTimes[weekDay][i].off) {
                                             if (enableLogs) {
-                                                console.log(
-                                                    "It's not a holiday and it's between working hours: " + onOffTimes[weekDay][i].on + " - " + onOffTimes[weekDay][i].off + ". Power on."
-                                                );
+                                                console.log( "It's between working hours: " + onOffTimes[weekDay][i].on + " - " + onOffTimes[weekDay][i].off + ". Power on.");
                                             }
                                             Shelly.call("Switch.set", { id: 0, on: true }); // Device powered On
                                             return; // Exit the loop since we found the time slot
