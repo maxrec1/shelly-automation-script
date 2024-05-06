@@ -246,7 +246,7 @@
                       var currentDate = year + "-" + month + "-" + day; //Formatted date
                       currentTime = data.time;
                       weekDay = data.dayOfWeek;
-                    currentDate = "2024-05-01"; //testdate
+                    // currentDate = "2024-05-01"; //testdate
                       var holidaysURL =
                           "https://openholidaysapi.org/PublicHolidays?countryIsoCode=AT&languageIsoCode=DE&validFrom=" +
                           (year) +
