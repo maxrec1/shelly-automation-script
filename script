@@ -326,12 +326,6 @@ function scheduledTask() {
                                         }
                                     }
                                 }
-
-                                // Log energy consumption before turning off
-                                if (lastStatus && lastStatus.delta.aenergy && typeof lastStatus.delta.aenergy.total !== "undefined") {
-                                    console.log("Last total consumed energy before turning off: " + lastStatus.delta.aenergy.total + "Wh.");
-                                    console.log("Last total CO2 Emissions before turning off: " + (lastStatus.delta.aenergy.total / 1000) * 30 + "g."); // 30 CO2eq/kWh
-                                }
                                 Shelly.call("Switch.set", { id: 0, on: false }); // Device powered Off
                             }
                         }
