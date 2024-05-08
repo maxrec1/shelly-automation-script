@@ -1,0 +1,150 @@
+// This script will monitor script 1 and restart it if it fails. For future devices, edit IP address in line 127! 
+
+var scheduleString = "0 */1 * * * *"; // Run the script every  X minutes, change frecuancy here or directly in "Schedules"
+
+
+let CONFIG = {
+
+    KVS_KEY: "Script-Schedule-" + JSON.stringify(Shelly.getCurrentScriptId()),
+
+    SCHEDULE_TIMESPEC: scheduleString,
+
+    SCHEDULE_ID: -1,
+
+};
+
+function registerIfNotRegistered() {
+
+    //print("Reading from ", CONFIG.KVS_KEY);
+
+    Shelly.call(
+
+        "KVS.Get",
+
+        {
+
+            key: CONFIG.KVS_KEY,
+
+        },
+
+        function (result, error_code, error_message) {
+
+            //we are not registered yet
+
+            if (error_code !== 0) {
+
+                installSchedule();
+
+                return;
+
+            }
+
+            CONFIG.SCHEDULE_ID = result.value;
+
+            //check if the schedule was deleted and reinstall
+
+            Shelly.call("Schedule.List", {}, function (result) {
+
+                let i = 0;
+
+                for (i = 0; i < result.jobs.length; i++) {
+
+                    if (result.jobs[i].id === CONFIG.SCHEDULE_ID) return;
+
+                }
+
+                installSchedule();
+
+            });
+
+        }
+
+    );
+
+}
+
+function saveScheduleIDInKVS(scheduleId) {
+
+    Shelly.call("KVS.Set", {
+
+        key: CONFIG.KVS_KEY,
+
+        value: scheduleId,
+
+    });
+
+}
+
+function installSchedule() {
+
+    Shelly.call(
+
+        "Schedule.Create",
+
+        {
+
+            enable: true,
+
+            timespec: CONFIG.SCHEDULE_TIMESPEC,
+
+            calls: [
+
+                {
+
+                    method: "script.eval",
+
+                    params: {
+
+                        id: Shelly.getCurrentScriptId(),
+
+                        code: "scheduledTask()",
+
+                    },
+
+                },
+
+            ],
+
+        },
+
+        function (result) {
+
+            //save a record that we are registered
+
+            saveScheduleIDInKVS(result.id);
+
+        }
+
+    );
+
+}
+
+registerIfNotRegistered();
+
+function scheduledTask() {
+    Shelly.call(
+        "HTTP.GET", {
+            "url": "http://192.168.1.112/rpc/Shelly.GetStatus",
+        },
+        function (result) {
+            // Parse the JSON response
+            var response = JSON.parse(result.body);
+
+            // Check if script:1 is present and its running property is true
+            if (response.hasOwnProperty('script:1') && response['script:1'].hasOwnProperty('running')) {
+                var isRunning = response['script:1'].running;
+                console.log("Script:1 is running:", isRunning);
+                if (!isRunning) {
+                    console.log("Script has failed, restarting device...");
+                    Shelly.call('Shelly.Reboot');
+                }
+            } else {
+                console.log("Script:1 status not found.");
+                // You might want to handle this case as per your requirements.
+            }
+        }
+    );
+}
+
+
+scheduledTask();
