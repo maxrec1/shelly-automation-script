@@ -1,4 +1,4 @@
-// This script will monitor script 1 and restart it if it fails. For future devices, edit IP address in line 127! 
+// This script will monitor script 1 and restart it if it fails. For future devices, edit IP address in scheduledTask()! 
 
 var scheduleString = "0 */1 * * * *"; // Run the script every  X minutes, change frecuancy here or directly in "Schedules"
 
@@ -193,16 +193,16 @@ function scheduledTask() {
         function (result) {
             // Parse the JSON response
             var response = JSON.parse(result.body);
-
             // Check if script:1 is present and its running property is true
+            var macAddress = response.sys.mac;
             if (response.hasOwnProperty('script:1') && response['script:1'].hasOwnProperty('running')) {
                 var isRunning = response['script:1'].running;
-                console.log("Script:1 is running:", isRunning);
+                //console.log("Script:1 is running:", isRunning);
                 if (!isRunning) {
-                    sendNotification("Shelly device broke!. Restarting...");
-                    console.log("Script has failed, restarting device...");
+                    sendNotification("Shelly device " + macAddress + " broke!. Restarting...");
+                    console.log("Script on" + macAddress + "has failed, restarting device...");
                     // Wait for notification to be sent before restarting. 
-                    let timerHandle = Timer.set(3000, false, function() {
+                    let timerHandle = Timer.set(5000, false, function() {
                     Shelly.call('Shelly.Reboot');
                  });
                 }
