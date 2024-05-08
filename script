@@ -17,6 +17,11 @@ var onOffTimes = {
     "Sunday": [{ on: "12:00", off: "13:00" }, { on: "21:00", off: "22:00" }]
 };
 
+var offDays = ["Saturday", "Sunday"]; // Days device is powered off.
+var scheduleString = "0 */1 * * * *"; // Run the script every  X minutes, change frecuancy here or directly in "Schedules"
+var enableLogs = true; // Enable console logs.
+//*************************************************************************************************///
+
 // Function to log hours for a specific day
 function logHours(day) {
     if (day in onOffTimes) {
@@ -33,9 +38,6 @@ function logHours(day) {
     }
 }
 
-var offDays = ["Saturday", "Sunday"]; // Days device is powered off.
-var scheduleString = "0 */1 * * * *"; // Run the script every  X minutes, change frecuancy here or directly in "Schedules"
-var enableLogs = true; // Enable console logs.
 
 //*************************************************************************************************///
 ///----- This will register the script to be called on a schedule-----//
