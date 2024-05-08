@@ -37,127 +37,68 @@ var offDays = ["Saturday", "Sunday"]; // Days device is powered off.
 var scheduleString = "0 */1 * * * *"; // Run the script every  X minutes, change frecuancy here or directly in "Schedules"
 var enableLogs = true; // Enable console logs.
 
-
-
 //*************************************************************************************************///
-
 ///----- This will register the script to be called on a schedule-----//
-
-
 let CONFIG = {
-
     KVS_KEY: "Script-Schedule-" + JSON.stringify(Shelly.getCurrentScriptId()),
-
     SCHEDULE_TIMESPEC: scheduleString,
-
     SCHEDULE_ID: -1,
-
 };
 
 function registerIfNotRegistered() {
-
     //print("Reading from ", CONFIG.KVS_KEY);
-
     Shelly.call(
-
         "KVS.Get",
-
         {
-
             key: CONFIG.KVS_KEY,
-
         },
-
         function (result, error_code, error_message) {
-
             //we are not registered yet
-
             if (error_code !== 0) {
-
                 installSchedule();
-
                 return;
-
             }
-
             CONFIG.SCHEDULE_ID = result.value;
-
             //check if the schedule was deleted and reinstall
-
             Shelly.call("Schedule.List", {}, function (result) {
-
                 let i = 0;
-
                 for (i = 0; i < result.jobs.length; i++) {
-
                     if (result.jobs[i].id === CONFIG.SCHEDULE_ID) return;
-
                 }
-
                 installSchedule();
-
             });
-
         }
-
     );
-
 }
 
 function saveScheduleIDInKVS(scheduleId) {
-
     Shelly.call("KVS.Set", {
-
         key: CONFIG.KVS_KEY,
-
         value: scheduleId,
-
     });
-
 }
 
 function installSchedule() {
-
     Shelly.call(
-
         "Schedule.Create",
-
         {
-
             enable: true,
-
             timespec: CONFIG.SCHEDULE_TIMESPEC,
-
             calls: [
-
                 {
-
                     method: "script.eval",
-
                     params: {
-
                         id: Shelly.getCurrentScriptId(),
-
                         code: "scheduledTask()",
-
                     },
-
                 },
-
             ],
-
         },
-
         function (result) {
-
             //save a record that we are registered
-
             saveScheduleIDInKVS(result.id);
-
         }
-
     );
-
 }
 
 registerIfNotRegistered();
@@ -236,7 +177,7 @@ function scheduledTask() {
                 "HTTP.GET",
                 {
                     url:
-                        "https://timeapi.io/api/Time/current/zone?timeZone=Europe/" + (currentCity),
+                        "https://timeapi.io/api/Time/current/zone?timeZone=Europe/Vienna",
                 },
                 function (result) {
                     var data = JSON.parse(result.body);
@@ -296,9 +237,9 @@ function scheduledTask() {
 
                             if (enableLogs) {
                                 if (isHoliday && holidayName !== "") {
-                                    console.log("Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Holiday:", holidayName);
+                                    console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Holiday:", holidayName);
                                 } else {
-                                    console.log("Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Is a holiday:", isHoliday);
+                                    console.log("City: ", currentCity,"Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Is a holiday:", isHoliday);
                                 }
                                 logHours(weekDay);
                             }
@@ -330,17 +271,11 @@ function scheduledTask() {
                             }
                         }
                     );
-
                 }
             );
         }
     );
-
     holidayData = [];
-
 }
-
-
-
 
 scheduledTask();
