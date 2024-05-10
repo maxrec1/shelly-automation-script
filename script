@@ -163,6 +163,7 @@ let currentCity; // Declare currentCity variable globally
 let currentDate;
 
 function scheduledTask() {
+      holidayData = [];
     // First API request to get the current location
     Shelly.call(
         "HTTP.GET",
@@ -277,7 +278,6 @@ function scheduledTask() {
             );
         }
     );
-    holidayData = [];
 }
 
 scheduledTask();
