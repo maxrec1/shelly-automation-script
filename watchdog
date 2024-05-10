@@ -1,4 +1,7 @@
-// This script will monitor script 1 and restart it if it fails. For future devices, edit IP address in scheduledTask()! 
+// This script will monitor script 1 and restart it if it fails. 
+//!!!!!!!!!!!!!!!!!!!For future devices, edit IP address in scheduledTask()!!!!!!!!!!!!!!!!!!//
+
+
 
 var scheduleString = "0 */1 * * * *"; // Run the script every  X minutes, change frecuancy here or directly in "Schedules"
 
