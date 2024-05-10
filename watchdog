@@ -3,7 +3,7 @@
 
 
 
-var scheduleString = "0 */1 * * * *"; // Run the script every  X minutes, change frecuancy here or directly in "Schedules"
+var scheduleString = "0 */5 * * * *"; // Run the script every  X minutes, change frecuancy here or directly in "Schedules"
 
 
 let CONFIG = {
