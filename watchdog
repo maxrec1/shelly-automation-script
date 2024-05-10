@@ -1,7 +1,7 @@
 // This script will monitor script 1 and restart it if it fails. 
 
 // --------------------------------- change shellyIp accordingly -------------------------- //
-let shellyIp = "http://192.168.1.112/"; // change IP address of the device!!
+let shellyIp = "http://xxx.xxx.x.xx/"; // change IP address of the device!!
 var scheduleString = "0 */5 * * * *"; // Run the script every 5 minutes, change frecuancy here or directly in "Schedules"
 /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -147,7 +147,7 @@ function sendNotification(msg) {
 function scheduledTask() {
     Shelly.call(
         "HTTP.GET", {
-            "url": "http://192.168.1.101/rpc/Shelly.GetStatus",
+            "url": url,
         },
         function (result) {
             // Parse the JSON response
