@@ -1,7 +1,8 @@
 // This script will monitor script 1 and restart it if it fails. 
+
 // --------------------------------- change shellyIp accordingly -------------------------- //
+let shellyIp = "http://192.168.1.112/"; // change IP address of the device!!
 var scheduleString = "0 */5 * * * *"; // Run the script every 5 minutes, change frecuancy here or directly in "Schedules"
-let shellyIp = "http://192.168.1.112/"; // change IP address of the device.
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 let url = shellyIp + "rpc/Shelly.GetStatus";
