@@ -1,4 +1,4 @@
-let shellyIp = "http://192.168.1.101/"; // change IP address of the device!!
+let shellyIp = "http://xxx.xxx.xx.x/"; // change IP address of the device!!
 var scheduleString = "0 */5 * * * *"; // Run the script every 5 minutes, change frecuancy here or directly in "Schedules"ly.GetStatus";
 let url = shellyIp + "rpc/Shelly.GetStatus";
 
