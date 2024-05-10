@@ -10,6 +10,7 @@ HOW TO USE
 •Power consumption is read from device and console logged as Total consumed energy and its CO2 equivalent emissions in grams at the end of each day.  
 •Watchdog script monitors and restarts main script. Important: change the IP address in watchdog script.
 •To see the local network debug logs: http://{SHELLY_IP}/debug/log
+• If script does not register in schedules, run scheduler and then overwrite the file with the contents of watchdog. 
 
 
 Status quo:
