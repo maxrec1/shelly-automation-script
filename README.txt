@@ -2,14 +2,14 @@ Shelly Schedule w/Holidays
 Version 4
 
 HOW TO USE
-•	After registering the shelly device in the app/cloud copy and paste the script in “Scripts” and run it. By default, the script will periodically be run every 5 minutes. This can be changed by editing TIMESPEC within the code or editing the created schedule in “Schedules”. 
-•	After running the script, it will register itself and create 2 schedules, one for script and one for watchdog.
-•	Within the script set On/Off hours for each day and the days the device is not powered on in “User defined variables”.  
-•	To limit the amount of information output to the console log, set enableLogs to false. 
-• Add and remove holiday dates by calling respective function, example in line 248.
-•	Power consumption is read from device and console logged as Total consumed energy and its CO2 equivalent emissions in grams at the end of each day.  
-• Watchdog script monitors and restarts main script. Important: change the IP address in watchdog script.
-• To see the local network debug logs: http://{SHELLY_IP}/debug/log
+•After registering the shelly device in the app/cloud copy and paste the script in “Scripts” and run it. By default, the script will periodically be run every 5 minutes. This can be changed by editing TIMESPEC within the code or editing the created schedule in “Schedules”. 
+•After running the script, it will register itself and create 2 schedules, one for script and one for watchdog.
+•Within the script set On/Off hours for each day and the days the device is not powered on in “User defined variables”.  
+•To limit the amount of information output to the console log, set enableLogs to false. 
+•Add and remove holiday dates by calling respective function, example in line 248.
+•Power consumption is read from device and console logged as Total consumed energy and its CO2 equivalent emissions in grams at the end of each day.  
+•Watchdog script monitors and restarts main script. Important: change the IP address in watchdog script.
+•To see the local network debug logs: http://{SHELLY_IP}/debug/log
 
 
 Status quo:
