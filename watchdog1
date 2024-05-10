@@ -4,13 +4,13 @@ let url = shellyIp + "rpc/Shelly.GetStatus";
 
 
 let CONFIG = {
-
-    KVS_KEY: "Script-Schedule-" + JSON.stringify(Shelly.getCurrentScriptId()),
-
-    SCHEDULE_TIMESPEC: scheduleString,
-
-    SCHEDULE_ID: -1,
-
+  PUSHED_URL: 'https://api.pushed.co/1/push',
+  PUSHED_APP_KEY: "jAhwjfmbbAYkZf9nDqwf",
+  PUSHED_APP_SECRET: "fD6nqX5jlw9TjZwNJsjnRC1NeJApvBTzq0jA2AE3bLdgU2HFM38A8o1sorntabAE",
+  PUSHED_TARGET_TYPE: "app",
+  KVS_KEY: "Script-Schedule-" + JSON.stringify(Shelly.getCurrentScriptId()),
+  SCHEDULE_TIMESPEC: scheduleString,
+  SCHEDULE_ID: -1,
 };
 
 function registerIfNotRegistered() {
@@ -126,13 +126,6 @@ registerIfNotRegistered();
  * You can pair this script with another that emits events, for example
  * readouts from a BLE sensor and push a notification to your phone
  */
-
-let CONFIG = {
-  PUSHED_URL: 'https://api.pushed.co/1/push',
-  PUSHED_APP_KEY: "jAhwjfmbbAYkZf9nDqwf",
-  PUSHED_APP_SECRET: "fD6nqX5jlw9TjZwNJsjnRC1NeJApvBTzq0jA2AE3bLdgU2HFM38A8o1sorntabAE",
-  PUSHED_TARGET_TYPE: "app",
-};
 
 function getPushedDataObject(msg) {
   if (CONFIG.PUSHED_APP_KEY === null) return null;
