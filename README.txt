@@ -10,7 +10,8 @@ HOW TO USE
 •Power consumption is read from device and console logged as Total consumed energy and its CO2 equivalent emissions in grams at the end of each day.  
 •Watchdog script monitors and restarts main script. Important: change the IP address in watchdog script.
 •To see the local network debug logs: http://{SHELLY_IP}/debug/log
-• If script does not register in schedules, run scheduler and then overwrite the file with the contents of watchdog. 
+•If script does not register in schedules, run scheduler and then overwrite the file with the contents of watchdog. 
+•KNOWN ISSUES: Power measuring function works. However the measured value will be reset to 0 if the device is rebooted (if script fails/crashes). Find a way to tell if device has been rebooted or replugged to restore measured value. Energy measurements remain unchanged within the app and cloud, it is always possible to see energy log there.  
 
 
 Status quo:
