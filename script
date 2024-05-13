@@ -5,6 +5,9 @@
 ////////////---------------------------------User defined variables---------------------////////////////
 
 var shellyIP = "http://192.168.1.102"; // Change device IP!
+//function checkForWifi() { 
+//const response = Shelly.getComponentStatus('wifi') 
+//const isConnected = response.status==='got ip'; // Test to get IP automatically 
 
 // On//Off daily schedule for each day 
 var onOffTimes = {
