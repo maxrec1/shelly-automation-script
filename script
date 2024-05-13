@@ -4,9 +4,8 @@
 //*************************************************************************************************///
 ////////////---------------------------------User defined variables---------------------////////////////
 
-var shellyIP = "http://192.168.1.102"; // Change device IP!
 
-// On//Off daily schedule for each day 
+// Set On//Off daily schedule for the week  
 var onOffTimes = {
     "Monday": [{ on: "12:45", off: "12:45" }, { on: "12:47", off: "12:48" }],
     "Tuesday": [{ on: "11:15", off: "12:00" }, { on: "15:00", off: "18:17" }],
