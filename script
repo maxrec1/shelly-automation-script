@@ -16,7 +16,7 @@ var onOffTimes = {
     "Sunday": [{ on: "12:00", off: "13:00" }, { on: "21:00", off: "22:00" }]
 };
 
-//var shellyIP = "http://192.168.1.102"; // Change device IP!
+var shellyIP = "http://192.168.1.102"; // Change device IP!
 var offDays = ["Sunday"]; // Days device is powered off.
 var scheduleString = "0 */5 * * * *"; // Run the script every  X minutes, change frequency here or directly in "Schedules"
 var enableLogs = true; // Enable console logs.
@@ -99,12 +99,12 @@ let isWorkingHours;
 var shellyIP;
 
 //Read ip automatically
-Shelly.call("WiFi.GetStatus", null, function (status) {
-  if (status.status === "got ip") {
-    shellyIP = status.sta_ip;
-    console.log(shellyIP);
-  }
-});
+//Shelly.call("WiFi.GetStatus", null, function (status) {
+  //if (status.status === "got ip") {
+    //shellyIP = status.sta_ip;
+    //console.log(shellyIP);
+  //}
+//});
 var url = shellyIP + "/rpc/Shelly.GetStatus";
 
 // Function to log hours for a specific day
