@@ -96,6 +96,7 @@ let holidayYear;
 let year;
 let manualControl = false;
 let isWorkingHours;
+var shellyIP;
 
 //Read ip automatically
 Shelly.call("WiFi.GetStatus", null, function (status) {
