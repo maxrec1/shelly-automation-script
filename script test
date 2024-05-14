@@ -8,7 +8,7 @@
 // Set On//Off daily schedule for the week  
 var onOffTimes = {
     "Monday": [{ on: "12:45", off: "12:45" }, { on: "12:47", off: "12:48" }],
-    "Tuesday": [{ on: "13:25", off: "13:29" }, { on: "13:32", off: "13:32" }],
+    "Tuesday": [{ on: "13:25", off: "13:29" }, { on: "13:32", off: "14:32" }],
     "Wednesday": [],
     "Thursday": [{ on: "08:30", off: "10:00" }, { on: "13:00", off: "23:00" }],
     "Friday": [{ on: "11:15", off: "12:00" }, { on: "23:00", off: "23:59" }],
@@ -142,29 +142,16 @@ function getCurrentLocation(callback) {
     Shelly.call(
         "HTTP.GET",
         {
-            url: shellyIP + "/rpc/Shelly.DetectLocation",
+            url: "https://ipinfo.io/json",
         },
         function (result) {
             var data = JSON.parse(result.body);
-            var currentCity = data.tz;
+            var currentCity = data.city;
             callback(currentCity);
         }
     );
-} 
-// Function to get current time
-function getSysTime(callback) {
-    Shelly.call(
-        "HTTP.GET",
-        {
-            url: shellyIP + "/rpc/Shelly.GetStatus",
-        },
-        function (result) {
-            var data = JSON.parse(result.body);
-            var sysTime = data.sys.time;
-            callback(sysTime);
-        }
-    );
 }
+let switchSource; 
 // Function to check if device button has been manually pressed (manual control outside working hours)
 function buttonManuallyPressed(callback) {
     Shelly.call(
@@ -417,8 +404,3 @@ function scheduledTask() {
 }
 
 scheduledTask();
-
-getSysTime(function(sysTime) {
-        // Use the retrieved time value here
-        console.log("Current time is:", sysTime);
-    });
