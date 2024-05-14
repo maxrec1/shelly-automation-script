@@ -8,7 +8,7 @@
 // Set On//Off daily schedule for the week  
 var onOffTimes = {
     "Monday": [{ on: "12:45", off: "12:45" }, { on: "12:47", off: "12:48" }],
-    "Tuesday": [{ on: "11:15", off: "12:00" }, { on: "15:00", off: "18:17" }],
+    "Tuesday": [{ on: "13:25", off: "13:29" }, { on: "13:32", off: "13:32" }],
     "Wednesday": [],
     "Thursday": [{ on: "08:30", off: "10:00" }, { on: "13:00", off: "23:00" }],
     "Friday": [{ on: "11:15", off: "12:00" }, { on: "23:00", off: "23:59" }],
@@ -176,6 +176,7 @@ function buttonManuallyPressed(callback) {
                         }
                     }
                     callback(switchSource, true);
+                    console.log("Manual mode is active.");
                 });
             } else {
                 callback(switchSource, false);
@@ -186,26 +187,45 @@ function buttonManuallyPressed(callback) {
 
 
 
-// Function to get current date and time
-function getCurrentDateTime(callback) {
-    Shelly.call(
-        "HTTP.GET",
-        {
-            url: "https://timeapi.io/api/Time/current/zone?timeZone=Europe/Vienna",
-        },
-        function (result) {
-            var data = JSON.parse(result.body);
-            var dateTime = {
-                year: data.year,
-                month: data.month < 10 ? "0" + data.month : data.month,
-                day: data.day < 10 ? "0" + data.day : data.day,
-                time: data.time,
-                dayOfWeek: data.dayOfWeek,
-            };
-            callback(dateTime);
-        }
-    );
+function getCurrentDateTime(callback, retryCount, retryDelay) {
+    retryCount = typeof retryCount !== 'undefined' ? retryCount : 3;
+    retryDelay = typeof retryDelay !== 'undefined' ? retryDelay : 1000;
+
+    function makeRequest(attempt) {
+        Shelly.call(
+            "HTTP.GET",
+            {
+                url: "https://timeapi.io/api/Time/current/zone?timeZone=Europe/Vienna",
+            },
+            function (result) {
+                if (result.body) {
+                    var data = JSON.parse(result.body);
+                    var dateTime = {
+                        year: data.year,
+                        month: data.month < 10 ? "0" + data.month : data.month,
+                        day: data.day < 10 ? "0" + data.day : data.day,
+                        time: data.time,
+                        dayOfWeek: data.dayOfWeek,
+                    };
+                    callback(dateTime);
+                    //console.log(dateTime);
+
+                } else if (attempt < retryCount) {
+                    // Retry if attempt count is less than retryCount
+                    setTimeout(function () {
+                        makeRequest(attempt + 1);
+                    }, retryDelay);
+                } else {
+                    // Retry limit reached, handle error
+                    console.log("Failed to retrieve current date and time after multiple attempts.");
+                }
+            }
+        );
+    }
+
+    makeRequest(1); // Start the initial request
 }
+
 
 // Function to add custom user holidays
 function addHoliday(startDate, nameText, lang) {
@@ -282,7 +302,9 @@ function handleHolidays(currentDate, isHoliday, currentCity) {
                 if (enableLogs) {
                     console.log(weekDay + " is registered as an off day in " + currentCity + ". Power off.");
                 }
-                Shelly.call("Switch.set", { id: 0, on: false }); // Device powered Off
+                if (!manualControl) {
+                    Shelly.call("Switch.set", { id: 0, on: false }); // Device powered Off
+                }
                 return;
             }
         }
@@ -298,10 +320,11 @@ function handleHolidays(currentDate, isHoliday, currentCity) {
                 }
             }
         }
-        Shelly.call("Switch.set", { id: 0, on: false }); // Device powered Off
+        if (!manualControl) {
+            Shelly.call("Switch.set", { id: 0, on: false }); // Device powered Off
+        }
     }
 }
-
 // Actual task to be called on a schedule, main()
 function scheduledTask() {
     getCurrentLocation(function (currentCity) {
@@ -346,7 +369,7 @@ function scheduledTask() {
                             holidayYear = holiday.startDate.split('-')[0];
                             //console.log("Holiday Year: ", holidayYear); 
                         });
-                        // Call function to handle holidays
+                        // Call function to days
                         handleHolidays(currentDate, isHoliday, currentCity); // Pass currentCity to handleHolidays
                     }
                 );
@@ -370,7 +393,7 @@ function scheduledTask() {
             if (!isWorkingHours) {
                 manualControl = true; // Enable manual control outside working hours
                 buttonManuallyPressed(function(switchSource) {
-                   // console.log("Switch source:", switchSource);
+                    //console.log("Switch source:", switchSource);
                 });
             } else {
                 manualControl = false; // Reset manualControl to false when it's working hours
