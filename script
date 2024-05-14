@@ -101,6 +101,8 @@ let holidayYear;
 let year;
 let manualControl = false;
 let isWorkingHours;
+var consumedPower = 0;
+let lastDate = ""; 
 
 // Function to log hours for a specific day
 function logHours(day) {
@@ -120,19 +122,17 @@ function logHours(day) {
 
 // Function to measure consumed power
 Shelly.addStatusHandler(function (status) {
+    // Set status.delta.aenergy.total to 0
     // Check if the event source is a switch and if the id of the input is 0
     if (status.name === "switch" && status.id === 0) {
         lastStatus = status;
         // Check if the delta contains energy data and if total is defined
-        if (status.delta.aenergy && typeof status.delta.aenergy.total !== "undefined") {
-            if (currentTime === "23:58" || currentTime === "23:59") {
-                console.log("Power used on: " + weekDay + status.delta.aenergy.total);
-                console.log("CO2 equivalent: " + status.delta.aenergy.total / 1000 * 30 + "g.");
-                status.delta.aenergy.total = 0;
-                if (enableLogs) {
-                    console.log("Energy consumption reset to 0 at " + currentTime);
-                }
-            }
+        if (status.delta.aenergy && status.delta.aenergy.by_minute && status.delta.aenergy.by_minute.length > 0) {
+            consumedPower += status.delta.aenergy.by_minute[0];
+            //console.log("Power total", status.delta.aenergy.total);
+            //console.log("Power this minute", status.delta.aenergy.by_minute[0] / 1000);
+            //console.log("Power by minute total", consumedPower / 1000);
+            //console.log(status.delta.aenergy.total);
         }
     }
 });
@@ -268,9 +268,9 @@ function handleHolidays(currentDate, isHoliday, currentCity) {
 
     if (enableLogs) {
         if (isHoliday && holidayName !== "") {
-            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Holiday:", holidayName);
+            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Holiday:", holidayName, "Power:", consumedPower + " Wh");
         } else {
-            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Is a holiday:", isHoliday);
+            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Is a holiday:", isHoliday, "Power:", consumedPower + " Wh");
         }
         logHours(weekDay);
     }
@@ -312,6 +312,13 @@ function scheduledTask() {
             var month = dateTime.month;
             var day = dateTime.day;
             currentDate = year + "-" + month + "-" + day;
+            // Check if the date has changed since the last invocation
+            if (currentDate !== lastDate) {
+                consumedPower = 0; // Reset consumedPower to 0 when the date changes
+                lastDate = currentDate; // Update lastDate to the current date
+                console.log("Day is over. Total consumed power: ", consumedPower);
+            }
+            
             var holidaysURL =
                 "https://openholidaysapi.org/PublicHolidays?countryIsoCode=AT&languageIsoCode=DE&validFrom=" +
                 year +
