@@ -1,7 +1,8 @@
-let shellyIp = "http://192.168.1.102/"; // change IP address of the device!!
 var scheduleString = "0 */5 * * * *"; // Run the script every 5 minutes, change frecuancy here or directly in "Schedules"ly.GetStatus";
-let url = shellyIp + "rpc/Shelly.GetStatus";
-
+let response = Shelly.getComponentStatus("wifi");
+var shellyIP = "http://" + response.sta_ip;
+//var shellyIP = "http://192.168.1.101"; // Change device IP!
+var url = shellyIP + "/rpc/Shelly.GetStatus";
 
 let CONFIG = {
   PUSHED_URL: 'https://api.pushed.co/1/push',
@@ -185,12 +186,13 @@ function scheduledTask() {
         },
         function (result) {
             // Parse the JSON response
+            console.log(url);
             var response = JSON.parse(result.body);
             // Check if script:1 is present and its running property is true
             var macAddress = response.sys.mac;
             if (response.hasOwnProperty('script:1') && response['script:1'].hasOwnProperty('running')) {
                 var isRunning = response['script:1'].running;
-                //console.log("Script:1 is running:", isRunning);
+                console.log("Script:1 is running:", isRunning);
                 if (!isRunning) {
                     sendNotification("Shelly device " + macAddress + " broke!. Restarting...");
                     console.log("Script on" + macAddress + "has failed, restarting device...");
@@ -203,6 +205,7 @@ function scheduledTask() {
         }
     );
 }
+
 
 
 scheduledTask();
