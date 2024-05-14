@@ -2,16 +2,16 @@ Shelly Schedule w/Holidays
 Version 4
 
 HOW TO USE
-•After registering the shelly device in the app/cloud copy and paste the script in “Scripts” and run it. By default, the script will periodically be run every 5 minutes. This can be changed by editing TIMESPEC within the code or editing the created schedule in “Schedules”. 
-•After running the script, it will register itself and create 2 schedules, one for script and one for watchdog.
-•Within the script set On/Off hours for each day and the days the device is not powered on in “User defined variables”.  
+•After registering the shelly device in the app/cloud create twoscripts, one for and one for ."script" and "watchgod" in “Scripts” copy and paste its contents and first run script, then watchdog. By default, both scripts will periodically be run every 5 minutes. This can be changed by editing TIMESPEC within the code or editing the created schedule in “Schedules”. 
+•After running the scripts, they will register themselves and create 2 schedules, one for script and one for watchdog.
+•Within "script" set On/Off hours for each day and the days the device is not powered on in “User defined variables”.  
 •To limit the amount of information output to the console log, set enableLogs to false. 
-•Add and remove holiday dates by calling respective function, example in line 248.
-•Power consumption is read from device and console logged as Total consumed energy and its CO2 equivalent emissions in grams at the end of each day.  
-•Watchdog script monitors and restarts main script. Important: change the IP address in watchdog script.
+•Add and remove holiday dates by calling respective function, example in line 245.
+•Power consumption is read from device and console logged as Total consumed energy and its CO2 equivalent emissions in grams at the end of each day and every time the script is called.  
+•Watchdog script monitors and restarts main script if it fails. 
 •To see the local network debug logs: http://{SHELLY_IP}/debug/log
-•If script does not register in schedules, run scheduler and then overwrite the file with the contents of watchdog. 
-•KNOWN ISSUES: Power measuring function works. However the measured value will be reset to 0 if the device is rebooted (if script fails/crashes). Find a way to tell if device has been rebooted or replugged to restore measured value. Energy measurements remain unchanged within the app and cloud, it is always possible to see energy log there.  
+•If a script does not register in schedules, create a script and pate contents of "scheduler" and then overwrite the file with the contents of watchdog. 
+•KNOWN ISSUES: Power measuring function works. However the measured value will be reset to 0 if the device is rebooted (if script fails/crashes). Find a way to tell if device has been rebooted or replugged to restore measured value. However, energy measurements remain unchanged within the app and cloud, it is always possible to see energy log there.  
 
 
 Status quo:
