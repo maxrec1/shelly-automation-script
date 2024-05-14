@@ -417,3 +417,8 @@ function scheduledTask() {
 }
 
 scheduledTask();
+
+getSysTime(function(sysTime) {
+        // Use the retrieved time value here
+        console.log("Current time is:", sysTime);
+    });
