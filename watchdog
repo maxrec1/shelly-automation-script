@@ -196,7 +196,7 @@ function scheduledTask() {
                     console.log("Script on" + macAddress + "has failed, restarting device...");
                     // Wait for notification to be sent before restarting. 
                     let timerHandle = Timer.set(5000, false, function() {
-                    //Shelly.call('Shelly.Reboot');
+                    Shelly.call('Shelly.Reboot');
                  });
                 }
             } 
