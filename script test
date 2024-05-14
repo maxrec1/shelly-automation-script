@@ -1,6 +1,5 @@
-// This script automates the operation of a Shelly device based on the current time, holidays, and 
-// predefined working hours. 
-
+// Scheduler test. gets device location and time locally from system and checks the date once a day when day changes. 
+This API call will break the code if theres no response, to avoid this call it only once a day. Retry system is coded but has not been tested yet.
 //*************************************************************************************************///
 ////////////---------------------------------User defined variables---------------------////////////////
 
@@ -345,7 +344,7 @@ function scheduledTask() {
   getSysTime(function(sysTime) {
     getCurrentLocation(function (currentCity) {
         getCurrentDateTime(function (dateTime) {
-            currentTime = dateTime.time;
+            //currentTime = dateTime.time;
             currentTime = sysTime;
             weekDay = dateTime.dayOfWeek;
             year = dateTime.year;
@@ -357,6 +356,7 @@ function scheduledTask() {
                 consumedPower = 0; // Reset consumedPower to 0 when the date changes
                 lastDate = currentDate; // Update lastDate to the current date
                 console.log("Day is over. Total consumed power: ", consumedPower);
+                console.log("New date is being saved:", currentDate);
             }
             
             var holidaysURL =
