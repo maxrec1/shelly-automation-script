@@ -152,7 +152,7 @@ function getSysTime(callback) {
         },
         function (result) {
             var data = JSON.parse(result.body);
-            // sysTime = data.time CHECK THIS!!! why was  systime not defined?
+            // sysTime = data.time CHECK THIS!!! probably define systime here for better readability ...
             powerOn = data['switch:0'].output; 
             callback(sysTime, powerOn); 
         }
