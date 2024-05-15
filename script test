@@ -1,8 +1,6 @@
 // Scheduler test. gets device location and time locally from system and checks the date once a day when day changes. 
 //*************************************************************************************************///
 ////////////---------------------------------User defined variables---------------------////////////////
-
-
 // Set On//Off daily schedule for the week  
 var onOffTimes = {
     "Monday": [{ on: "12:45", off: "12:45" }, { on: "12:47", off: "12:48" }],
@@ -102,6 +100,7 @@ var onOffTimes = {
   var consumedPower = 0;
   let currentDate = "";
   let sysTime;
+  let powerOn;
   
   // Function to log hours for a specific day
   function logHours(day) {
@@ -143,8 +142,9 @@ var onOffTimes = {
         }
     );
   } 
-  // Function to get current time
-  function getSysTime(callback) {
+  // Function to get current time and check if switch is on
+// Function to get current time and check if switch is on
+function getSysTime(callback) {
     Shelly.call(
         "HTTP.GET",
         {
@@ -152,11 +152,13 @@ var onOffTimes = {
         },
         function (result) {
             var data = JSON.parse(result.body);
-            var sysTime = data.sys.time;
-            callback(sysTime);
+            // Assign value to powerOn
+            powerOn = data['switch:0'].output; 
+            callback(sysTime, powerOn); 
         }
     );
-  }
+}
+
   // Function to check if device button has been manually pressed (manual control outside working hours)
   function buttonManuallyPressed(callback) {
     Shelly.call(
@@ -274,9 +276,9 @@ var onOffTimes = {
     });
     if (enableLogs) {
         if (isHoliday && holidayName !== "") {
-            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Holiday:", holidayName, "Power:", consumedPower + " Wh");
+            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Holiday:", holidayName, "Power:", consumedPower + " Wh", "Is Active: ", powerOn);
         } else {
-            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Is a holiday:", isHoliday, "Power:", consumedPower + " Wh");
+            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Is a holiday:", isHoliday, "Power:", consumedPower + " Wh","Is Active: ", powerOn);
         }
         logHours(weekDay);
     }
@@ -299,7 +301,7 @@ var onOffTimes = {
             for (let i = 0; i < onOffTimes[weekDay].length; i++) {
                 if (currentTime >= onOffTimes[weekDay][i].on && currentTime <= onOffTimes[weekDay][i].off) {
                     if (enableLogs) {
-                        console.log("It's between working hours: " + onOffTimes[weekDay][i].on + " - " + onOffTimes[weekDay][i].off + ". Power on.");
+                        console.log("It's between working hours: " + onOffTimes[weekDay][i].on + " - " + onOffTimes[weekDay][i].off);
                     }
                     Shelly.call("Switch.set", { id: 0, on: true }); // Device powered On
                     return; // Exit the loop since we found the time slot
