@@ -1,4 +1,4 @@
-// Scheduler test. gets device location and time locally from system and checks the date once a day when day changes. 
+// Scheduler test. gets device time locally from system, checks the date once a day when day changes and creates holiday list once a year. 
 //*************************************************************************************************///
 ////////////---------------------------------User defined variables---------------------////////////////
 
