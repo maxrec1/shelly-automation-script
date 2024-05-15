@@ -1,10 +1,9 @@
-// restart script 1 instead of rebooting device 
 var scheduleString = "0 */5 * * * *"; // Run the script every 5 minutes, change frecuancy here or directly in "Schedules"ly.GetStatus";
 let response = Shelly.getComponentStatus("wifi");
 var shellyIP = "http://" + response.sta_ip;
 //var shellyIP = "http://192.168.1.101"; // Change device IP!
 var url = shellyIP + "/rpc/Shelly.GetStatus";
-var url1 = shellyIP + "Script.Start?id=1";
+var url1 = shellyIP + "/rpc/Script.Start?id=1";
 
 let CONFIG = {
   PUSHED_URL: 'https://api.pushed.co/1/push',
@@ -198,8 +197,18 @@ function scheduledTask() {
                     console.log("Script on" + macAddress + "has failed, restarting device...");
                     // Wait for notification to be sent before restarting. 
                     let timerHandle = Timer.set(5000, false, function() {
-                    //Shelly.call('Shelly.Reboot');
-                 });
+                                          //Shelly.call('Shelly.Reboot');
+
+                    Shelly.call(
+  "HTTP.GET", {
+    "url": url1,
+  },
+  function(result) {
+    print("Restarting Script 1 ", result.body);
+  }
+);  
+                      
+                                       });
                 }
             } 
         }
