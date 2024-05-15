@@ -152,7 +152,7 @@ function getSysTime(callback) {
         },
         function (result) {
             var data = JSON.parse(result.body);
-            // Assign value to powerOn
+            // sysTime = data.time CHECK THIS!!! 
             powerOn = data['switch:0'].output; 
             callback(sysTime, powerOn); 
         }
