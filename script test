@@ -102,7 +102,6 @@ let manualControl = false;
 let isWorkingHours;
 var consumedPower = 0;
 let currentDate = "";
-let lastDate = ""; 
 let sysTime;
 
 // Function to log hours for a specific day
@@ -347,19 +346,14 @@ function scheduledTask() {
         getCurrentLocation(function (currentCity) {
             if (currentDate === "" || currentTime === "00:00") {
                 getCurrentDateTime(function (dateTime) {
+                console.log("Day is over. Total consumed power: ", consumedPower +" Wh");
+                    consumedPower = 0; // Day has changed or first boot, Reset power
                     weekDay = dateTime.dayOfWeek;
                     year = dateTime.year;
                     var month = dateTime.month;
                     var day = dateTime.day;
                     currentDate = year + "-" + month + "-" + day;
-                    // Check if the date has changed since the last invocation
-                    if (currentDate !== lastDate) {
-                        consumedPower = 0; // Reset consumedPower to 0 when the date changes
-                        lastDate = currentDate; // Update lastDate to the current date
-                        console.log("Day is over. Total consumed power: ", consumedPower);
-                        console.log("New date is being saved:", currentDate);
-                    }
-                    
+                    console.log("New date is being saved:", currentDate);
                     var holidaysURL =
                         "https://openholidaysapi.org/PublicHolidays?countryIsoCode=AT&languageIsoCode=DE&validFrom=" +
                         year +
