@@ -1,4 +1,4 @@
-// Scheduler test. gets device time locally from system, checks the date once a day when day changes and creates holiday list once a year. 
+// Scheduler test. gets device location and time locally from system and checks the date once a day when day changes. 
 //*************************************************************************************************///
 ////////////---------------------------------User defined variables---------------------////////////////
 
@@ -7,7 +7,7 @@
 var onOffTimes = {
     "Monday": [{ on: "12:45", off: "12:45" }, { on: "12:47", off: "12:48" }],
     "Tuesday": [{ on: "13:25", off: "13:29" }, { on: "13:32", off: "13:32" }],
-    "Wednesday": [],
+    "Wednesday": [{ on: "12:00", off: "13:00" }, { on: "21:00", off: "22:00" }],
     "Thursday": [{ on: "08:30", off: "10:00" }, { on: "13:00", off: "23:00" }],
     "Friday": [{ on: "11:15", off: "12:00" }, { on: "23:00", off: "23:59" }],
     "Saturday": [{ on: "00:00", off: "13:00" }, { on: "21:00", off: "22:00" }],
@@ -312,82 +312,96 @@ var onOffTimes = {
     }
   }
   
-  // Actual task to be called on a schedule, main()
+  // Function to fetch the holiday list
+function fetchHolidayList(currentCity) {
+    var holidaysURL =
+        "https://openholidaysapi.org/PublicHolidays?countryIsoCode=AT&languageIsoCode=DE&validFrom=" +
+        year +
+        "-01-01&validTo=" +
+        year +
+        "-12-31";
+
+    // Check if holidayData array is already populated
+    if (holidayData.length === 0 || holidayYear != year) {
+        // If the holidayData array is empty or not current anymore, make a new request for the holiday list
+        console.log("Getting new holiday list");
+        holidayData = []; // Clear old holiday list
+        // Third API request to get the start date of holidays
+        Shelly.call(
+            "HTTP.GET",
+            {
+                url: holidaysURL,
+            },
+            function (startDateResult) {
+                var receivedHolidayData = JSON.parse(startDateResult.body);
+                var isHoliday = false;
+                // Append the holiday data to the existing holidayData array
+                receivedHolidayData.forEach(function (holiday) {
+                    holidayData.push(holiday);
+                    // Extract the year from the start date of the holiday
+                    holidayYear = holiday.startDate.split("-")[0];
+                    //console.log("Holiday Year: ", holidayYear);
+                });
+                // Call function to handle holidays
+                handleHolidays(currentDate, isHoliday, currentCity); // Pass currentCity to handleHolidays
+            }
+        );
+    } else {
+        // If the holidayData array is already populated, proceed to handle holidays directly
+        var isHoliday = false;
+        handleHolidays(currentDate, isHoliday, currentCity);
+    }
+
+    // Check if it's outside of working hours
+    isWorkingHours = false;
+    if (onOffTimes[weekDay]) {
+        for (let i = 0; i < onOffTimes[weekDay].length; i++) {
+            if (currentTime >= onOffTimes[weekDay][i].on && currentTime <= onOffTimes[weekDay][i].off) {
+                isWorkingHours = true;
+                break;
+            }
+        }
+    }
+
+    // Enable manual control outside working hours if necessary
+    if (!isWorkingHours) {
+        manualControl = true;
+        buttonManuallyPressed(function (switchSource) {
+            //console.log("Switch source:", switchSource);
+        });
+    } else {
+        manualControl = false;
+    }
+}
+
+  
   function scheduledTask() {
-      getSysTime(function(sysTime) {
-          currentTime = sysTime;
-          getCurrentLocation(function (currentCity) {
-              if (currentDate === "" || currentTime === "00:00") { // run on boot and when day changes. 
-                  getCurrentDate(function (dateTime) {
-                  console.log("Day is over. Total consumed power: ", consumedPower +" Wh");
-                      consumedPower = 0; // Day has changed or first boot, Reset power
-                      weekDay = dateTime.dayOfWeek;
-                      year = dateTime.year;
-                      var month = dateTime.month;
-                      var day = dateTime.day;
-                      currentDate = year + "-" + month + "-" + day;
-                      console.log("New date is being saved:", currentDate);
-                      var holidaysURL =
-                          "https://openholidaysapi.org/PublicHolidays?countryIsoCode=AT&languageIsoCode=DE&validFrom=" +
-                          year +
-                          "-01-01&validTo=" +
-                          year +
-                          "-12-31";
-  
-                      // Check if holidayData array is already populated
-                      if (holidayData.length === 0 || holidayYear != year) { // make a holiday list if the list is empty or not current anymore
-                          console.log("Getting new holiday list");
-                          holidayData = []; // clear old holiday list
-                          // Third API request to get the start date of holidays
-                          Shelly.call(
-                              "HTTP.GET",
-                              {
-                                  url: holidaysURL,
-                              },
-                              function (startDateResult) {
-                                  var receivedHolidayData = JSON.parse(startDateResult.body);
-                                  var isHoliday = false;
-                                  // Append the holiday data to the existing holidayData array
-                                  receivedHolidayData.forEach(function (holiday) {
-                                      holidayData.push(holiday);
-                                      // Extract the year from the start date of the holiday
-                                      holidayYear = holiday.startDate.split('-')[0];
-                                      //console.log("Holiday Year: ", holidayYear); 
-                                  });
-                                  // Call function to days
-                                  handleHolidays(currentDate, isHoliday, currentCity); // Pass currentCity to handleHolidays
-                              }
-                          );
-                      } else {
-                          //console.log("Holiday data array is already populated. No need to check again.");
-                          var isHoliday = false;
-                          handleHolidays(currentDate, isHoliday, currentCity);
-                      }
-  
-                      // Check if it's outside of working hours
-                      isWorkingHours = false;
-                      if (onOffTimes[weekDay]) {
-                          for (let i = 0; i < onOffTimes[weekDay].length; i++) {
-                              if (currentTime >= onOffTimes[weekDay][i].on && currentTime <= onOffTimes[weekDay][i].off) {
-                                  isWorkingHours = true;
-                                  break;
-                              }
-                          }
-                      }
-  
-                      if (!isWorkingHours) {
-                          manualControl = true; // Enable manual control outside working hours
-                          buttonManuallyPressed(function(switchSource) {
-                              //console.log("Switch source:", switchSource);
-                          });
-                      } else {
-                          manualControl = false; // Reset manualControl to false when it's working hours
-                      }
-                  });
-              }
-          });
-      });
-  }
-  
+    // Get the current system time
+    getSysTime(function (sysTime) {
+        currentTime = sysTime;
+        // Get the current location
+        getCurrentLocation(function (currentCity) {
+            // Check if the current date needs to be updated
+            if (currentDate === "" || currentTime === "00:00") {
+                // If currentDate is empty or the time is 00:00, update the current date
+                getCurrentDate(function (dateTime) {
+                    console.log("Day is over. Total consumed power: ", consumedPower + " Wh");
+                    consumedPower = 0; // Day has changed or first boot, Reset power
+                    weekDay = dateTime.dayOfWeek;
+                    year = dateTime.year;
+                    var month = dateTime.month;
+                    var day = dateTime.day;
+                    currentDate = year + "-" + month + "-" + day;
+                    console.log("New date is being saved:", currentDate);
+                    // After updating the current date, fetch the holiday list
+                    fetchHolidayList(currentCity);
+                });
+            } else {
+                // If the current date is already set, fetch the holiday list directly
+                fetchHolidayList(currentCity);
+            }
+        });
+    });
+}
   
   scheduledTask();
