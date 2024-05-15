@@ -6,6 +6,7 @@
     Power consumption is measured and logged at the end of the day. 
     watchdog restarts only main script. 
 // TO DO: Reset device, test power consumption with office monitor. compare measured value with aenergy.total    
+    gather and send logs to production DB.
 */
 //*************************************************************************************************///
 ////////////---------------------------------User defined variables---------------------////////////////
