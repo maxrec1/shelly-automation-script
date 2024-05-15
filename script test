@@ -5,6 +5,7 @@
     holiday list is made once a year and date is checked once a day. 
     Power consumption is measured and logged at the end of the day. 
     watchdog restarts only main script. 
+// TO DO: Reset device, test power consumption with office monitor. compare measured value with aenergy.total    
 */
 //*************************************************************************************************///
 ////////////---------------------------------User defined variables---------------------////////////////
