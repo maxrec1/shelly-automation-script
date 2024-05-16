@@ -151,7 +151,6 @@ var onOffTimes = {
         }
     );
   } 
-  // Function to get current time and check if switch is on
 // Function to get current time and check if switch is on
 function getSysTime(callback) {
     Shelly.call(
@@ -161,8 +160,9 @@ function getSysTime(callback) {
         },
         function (result) {
             var data = JSON.parse(result.body);
-            // sysTime = data.time CHECK THIS!!! probably define systime here for better readability ...
+            // Assign value to powerOn
             powerOn = data['switch:0'].output; 
+            sysTime = data.sys.time;
             callback(sysTime, powerOn); 
         }
     );
