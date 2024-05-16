@@ -1,4 +1,4 @@
-// if script does not register itself in schedules, run this script to register scheduledTask(). Then overwrite this file with "watchdog".
+// if script or watchdog do not register themselves in schedules, run this script to register scheduledTask(). Then overwrite this file with contents of "script " or "watchdog".
 
 let CONFIG = {
     KVS_KEY: "Script-Schedule-" + JSON.stringify(Shelly.getCurrentScriptId()),
