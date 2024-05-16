@@ -4,6 +4,7 @@ Version 4
 HOW TO USE
 •After registering the shelly device in the app/cloud create one script for"script" one for "watchdog" in “Scripts”. In the first file set /* User defined variables */ and paste the contents of the file. Then copy the contents of "wachdog". Finally run both scripts. By default, both scripts will periodically be run every 5 minutes. This can be changed by editing TIMESPEC within the code or editing the created schedule in “Schedules”. 
 •After running the scripts, they will register themselves and create 2 schedules, one for script and one for watchdog.
+•Outside of working hours the device will not automatically turn off if user manually powers it on. 
 •Current device information is displayed to console when script runs. To limit the amount of information output to the console log, set enableLogs to false. 
 •Power consumption is read from device and console logged as Total consumed energy and its CO2 equivalent emissions in grams at the end of each day and every time the script is called.  
 •Add and remove holiday dates by calling respective function, example in line 245.
