@@ -132,7 +132,7 @@ var onOffTimes = {
     if (status.name === "switch" && status.id === 0) {
         lastStatus = status;
         if (status.delta.aenergy && status.delta.aenergy.by_minute && status.delta.aenergy.by_minute.length > 0) {
-            consumedPower += status.delta.aenergy.by_minute[0];
+            consumedPower += status.delta.aenergy.by_minute[0]/1000;
         }
     }
   });
