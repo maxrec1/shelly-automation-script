@@ -1,40 +1,44 @@
-// This script automates the operation of a Shelly device based on the current time, holidays, and 
-// predefined working hours. 
-
+// Scheduler test. gets device location and time locally from system and checks the date once a day when day changes. 
+// Whats new: 
+/*  Url is obtained automatically, no need to edit the scripts.
+    Time is read locally from device, making main script much more stable. 
+    holiday list is made once a year and date is checked once a day. 
+    Power consumption is measured and logged at the end of the day. 
+    watchdog restarts only main script. 
+// TO DO: Reset device, test power consumption with office monitor. compare measured value with aenergy.total    
+    gather and send logs to production DB.
+*/
 //*************************************************************************************************///
 ////////////---------------------------------User defined variables---------------------////////////////
-
-
 // Set On//Off daily schedule for the week  
 var onOffTimes = {
     "Monday": [{ on: "12:45", off: "12:45" }, { on: "12:47", off: "12:48" }],
     "Tuesday": [{ on: "13:25", off: "13:29" }, { on: "13:32", off: "13:32" }],
-    "Wednesday": [],
+    "Wednesday": [{ on: "12:00", off: "13:00" }, { on: "21:00", off: "22:00" }],
     "Thursday": [{ on: "08:30", off: "10:00" }, { on: "13:00", off: "23:00" }],
     "Friday": [{ on: "11:15", off: "12:00" }, { on: "23:00", off: "23:59" }],
     "Saturday": [{ on: "00:00", off: "13:00" }, { on: "21:00", off: "22:00" }],
     "Sunday": [{ on: "12:00", off: "13:00" }, { on: "21:00", off: "22:00" }]
-};
-
-//var shellyIP = "http://192.168.1.102"; // Change device IP!
-var offDays = ["Sunday"]; // Days device is powered off.
-var scheduleString = "0 */5 * * * *"; // Run the script every  X minutes, change frequency here or directly in "Schedules"
-var enableLogs = true; // Enable console logs.
-
-//*************************************************************************************************///
-// Get IP Adress automatically
-let response = Shelly.getComponentStatus("wifi");
-var shellyIP = "http://" + response.sta_ip;
-var url = shellyIP + "/rpc/Shelly.GetStatus";
-
-///----- This will register the script to be called on a schedule-----//
-let CONFIG = {
+  };
+  
+  var offDays = ["Sunday"]; // Days device is powered off.
+  var scheduleString = "0 */5 * * * *"; // Run the script every  X minutes, change frequency here or directly in "Schedules"
+  var enableLogs = true; // Enable console logs.
+  
+  //*************************************************************************************************///
+  // Get IP Adress automatically
+  let response = Shelly.getComponentStatus("wifi");
+  var shellyIP = "http://" + response.sta_ip;
+  var url = shellyIP + "/rpc/Shelly.GetStatus";
+  
+  ///----- This will register the script to be called on a schedule-----//
+  let CONFIG = {
     KVS_KEY: "Script-Schedule-" + JSON.stringify(Shelly.getCurrentScriptId()),
     SCHEDULE_TIMESPEC: scheduleString,
     SCHEDULE_ID: -1,
-};
-
-function registerIfNotRegistered() {
+  };
+  
+  function registerIfNotRegistered() {
     //print("Reading from ", CONFIG.KVS_KEY);
     Shelly.call(
         "KVS.Get",
@@ -58,16 +62,16 @@ function registerIfNotRegistered() {
             });
         }
     );
-}
-
-function saveScheduleIDInKVS(scheduleId) {
+  }
+  
+  function saveScheduleIDInKVS(scheduleId) {
     Shelly.call("KVS.Set", {
         key: CONFIG.KVS_KEY,
         value: scheduleId,
     });
-}
-
-function installSchedule() {
+  }
+  
+  function installSchedule() {
     Shelly.call(
         "Schedule.Create",
         {
@@ -88,24 +92,27 @@ function installSchedule() {
             saveScheduleIDInKVS(result.id);
         }
     );
-}
-
-registerIfNotRegistered();
-
-///---------------------------------Helper functions----------------------------------------//
-let lastStatus;
-let currentTime;
-let weekDay;
-let holidayData = [];
-let holidayYear;
-let year;
-let manualControl = false;
-let isWorkingHours;
-var consumedPower = 0;
-let lastDate = ""; 
-
-// Function to log hours for a specific day
-function logHours(day) {
+  }
+  
+  registerIfNotRegistered();
+  
+  ///---------------------------------Helper functions----------------------------------------//
+  let lastStatus;
+  let currentTime;
+  let currentCity;
+  let weekDay;
+  let holidayData = [];
+  let holidayYear;
+  let year;
+  let manualControl = false;
+  let isWorkingHours;
+  var consumedPower = 0;
+  let currentDate = "";
+  let sysTime;
+  let powerOn;
+  
+  // Function to log hours for a specific day
+  function logHours(day) {
     if (day in onOffTimes) {
         if (onOffTimes[day].length === 0) {
             console.log("No hours logged for " + day + ".");
@@ -118,27 +125,20 @@ function logHours(day) {
     } else {
         console.log("No hours recorded for " + day + ".");
     }
-}
-
-// Function to measure consumed power
-Shelly.addStatusHandler(function (status) {
-    // Set status.delta.aenergy.total to 0
-    // Check if the event source is a switch and if the id of the input is 0
+  }
+  
+  // Function to measure consumed power
+  Shelly.addStatusHandler(function (status) {
     if (status.name === "switch" && status.id === 0) {
         lastStatus = status;
-        // Check if the delta contains energy data and if total is defined
         if (status.delta.aenergy && status.delta.aenergy.by_minute && status.delta.aenergy.by_minute.length > 0) {
             consumedPower += status.delta.aenergy.by_minute[0];
-            //console.log("Power total", status.delta.aenergy.total);
-            //console.log("Power this minute", status.delta.aenergy.by_minute[0] / 1000);
-            //console.log("Power by minute total", consumedPower / 1000);
-            //console.log(status.delta.aenergy.total);
         }
     }
-});
-
-// Function to get current location
-function getCurrentLocation(callback) {
+  });
+  
+  // Function to get current location
+  function getCurrentLocation(callback) {
     Shelly.call(
         "HTTP.GET",
         {
@@ -150,9 +150,26 @@ function getCurrentLocation(callback) {
             callback(currentCity);
         }
     );
+  } 
+// Function to get current time and check if switch is on
+function getSysTime(callback) {
+    Shelly.call(
+        "HTTP.GET",
+        {
+            url: shellyIP + "/rpc/Shelly.GetStatus",
+        },
+        function (result) {
+            var data = JSON.parse(result.body);
+            // Assign value to powerOn
+            powerOn = data['switch:0'].output; 
+            sysTime = data.sys.time;
+            callback(sysTime, powerOn); 
+        }
+    );
 }
-// Function to check if device button has been manually pressed (manual control outside working hours)
-function buttonManuallyPressed(callback) {
+
+  // Function to check if device button has been manually pressed (manual control outside working hours)
+  function buttonManuallyPressed(callback) {
     Shelly.call(
         "HTTP.GET",
         {
@@ -162,9 +179,8 @@ function buttonManuallyPressed(callback) {
             var data = JSON.parse(result.body);
             var switchSource = data["switch:0"].source;
             if (switchSource === "SHC" || switchSource === "button") {
-                // Check if it's outside of working hours
-                getCurrentDateTime(function (dateTime) {
-                    var currentTime = dateTime.time;
+                getCurrentDate(function (dateTime) {
+                    var currentTime = sysTime;
                     var weekDay = dateTime.dayOfWeek;
                     if (onOffTimes[weekDay]) {
                         for (let i = 0; i < onOffTimes[weekDay].length; i++) {
@@ -183,52 +199,33 @@ function buttonManuallyPressed(callback) {
             }
         }
     );
-}
-
-
-
-function getCurrentDateTime(callback, retryCount, retryDelay) {
-    retryCount = typeof retryCount !== 'undefined' ? retryCount : 3;
-    retryDelay = typeof retryDelay !== 'undefined' ? retryDelay : 1000;
-
-    function makeRequest(attempt) {
-        Shelly.call(
-            "HTTP.GET",
-            {
-                url: "https://timeapi.io/api/Time/current/zone?timeZone=Europe/Vienna",
-            },
-            function (result) {
-                if (result.body) {
-                    var data = JSON.parse(result.body);
-                    var dateTime = {
-                        year: data.year,
-                        month: data.month < 10 ? "0" + data.month : data.month,
-                        day: data.day < 10 ? "0" + data.day : data.day,
-                        time: data.time,
-                        dayOfWeek: data.dayOfWeek,
-                    };
-                    callback(dateTime);
-                    //console.log(dateTime);
-
-                } else if (attempt < retryCount) {
-                    // Retry if attempt count is less than retryCount
-                    setTimeout(function () {
-                        makeRequest(attempt + 1);
-                    }, retryDelay);
-                } else {
-                    // Retry limit reached, handle error
-                    console.log("Failed to retrieve current date and time after multiple attempts.");
-                }
+  }
+  
+  function getCurrentDate(callback, retryCount, retryDelay) {
+    Shelly.call(
+        "HTTP.GET",
+        {
+            url: "https://timeapi.io/api/Time/current/zone?timeZone=Europe/Vienna",
+        },
+        function (result) {
+            if (result.body) {
+                var data = JSON.parse(result.body);
+                var dateTime = {
+                    year: data.year,
+                    month: data.month < 10 ? "0" + data.month : data.month,
+                    day: data.day < 10 ? "0" + data.day : data.day,
+                    time: data.time,
+                    dayOfWeek: data.dayOfWeek,
+                };
+                callback(dateTime);
+                //console.log(dateTime);
             }
-        );
-    }
-
-    makeRequest(1); // Start the initial request
+        }
+    );
 }
 
-
-// Function to add custom user holidays
-function addHoliday(startDate, nameText, lang) {
+  // Function to add custom user holidays
+  function addHoliday(startDate, nameText, lang) {
     lang = lang || "de";
     holidayData.push({
         startDate: startDate,
@@ -237,9 +234,10 @@ function addHoliday(startDate, nameText, lang) {
             text: nameText,
         }],
     });
-}
-// Function to remove custom user holidays
-function removeHoliday(startDate) {
+  }
+
+  // Function to remove custom user holidays
+  function removeHoliday(startDate) {
     // Iterate through holidayData to find the holiday with the given startDate
     for (let i = 0; i < holidayData.length; i++) {
         if (holidayData[i].startDate === startDate) {
@@ -255,10 +253,10 @@ function removeHoliday(startDate) {
     if (enableLogs) {
         console.log("No holiday found on " + startDate + ".");
     }
-}
-
-// Function to check holiday list + daily schedules and turn device on or off
-function handleHolidays(currentDate, isHoliday, currentCity) {
+  }
+  
+  // Function to check holiday list + daily schedules and turn device on or off
+  function handleHolidays(currentDate, isHoliday, currentCity) {
     //######################################################################################################################      
     ///////---------------------------------------- ADD MORE HOLIDAYS HERE ------------------------------------------////       
     // addHoliday("2024-05-10", "User defined holiday 1");
@@ -281,20 +279,19 @@ function handleHolidays(currentDate, isHoliday, currentCity) {
             Shelly.call("Switch.set", { id: 0, on: false }); // Device powered Off
             isHoliday = true;
             holidayName = holiday.name[0].text;
-
+  
             return;
         }
     });
-
     if (enableLogs) {
         if (isHoliday && holidayName !== "") {
-            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Holiday:", holidayName, "Power:", consumedPower + " Wh");
+            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Holiday:", holidayName, "Power:", consumedPower + " Wh", "Is Active: ", powerOn);
         } else {
-            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Is a holiday:", isHoliday, "Power:", consumedPower + " Wh");
+            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Is a holiday:", isHoliday, "Power:", consumedPower + " Wh","Is Active: ", powerOn);
         }
         logHours(weekDay);
     }
-
+  
     // If no holiday is found, check if it's an offDay
     if (!isHoliday) {
         for (let i = 0; i < offDays.length; i++) {
@@ -313,7 +310,7 @@ function handleHolidays(currentDate, isHoliday, currentCity) {
             for (let i = 0; i < onOffTimes[weekDay].length; i++) {
                 if (currentTime >= onOffTimes[weekDay][i].on && currentTime <= onOffTimes[weekDay][i].off) {
                     if (enableLogs) {
-                        console.log("It's between working hours: " + onOffTimes[weekDay][i].on + " - " + onOffTimes[weekDay][i].off + ". Power on.");
+                        console.log("It's between working hours: " + onOffTimes[weekDay][i].on + " - " + onOffTimes[weekDay][i].off);
                     }
                     Shelly.call("Switch.set", { id: 0, on: true }); // Device powered On
                     return; // Exit the loop since we found the time slot
@@ -324,82 +321,98 @@ function handleHolidays(currentDate, isHoliday, currentCity) {
             Shelly.call("Switch.set", { id: 0, on: false }); // Device powered Off
         }
     }
-}
-// Actual task to be called on a schedule, main()
-function scheduledTask() {
-    getCurrentLocation(function (currentCity) {
-        getCurrentDateTime(function (dateTime) {
-            currentTime = dateTime.time;
-            weekDay = dateTime.dayOfWeek;
-            year = dateTime.year;
-            var month = dateTime.month;
-            var day = dateTime.day;
-            currentDate = year + "-" + month + "-" + day;
-            // Check if the date has changed since the last invocation
-            if (currentDate !== lastDate) {
-                consumedPower = 0; // Reset consumedPower to 0 when the date changes
-                lastDate = currentDate; // Update lastDate to the current date
-                console.log("Day is over. Total consumed power: ", consumedPower);
-            }
-            
-            var holidaysURL =
-                "https://openholidaysapi.org/PublicHolidays?countryIsoCode=AT&languageIsoCode=DE&validFrom=" +
-                year +
-                "-01-01&validTo=" +
-                year +
-                "-12-31";
+  }
+  
+  // Function to fetch the holiday list
+function fetchHolidayList(currentCity) {
+    var holidaysURL =
+        "https://openholidaysapi.org/PublicHolidays?countryIsoCode=AT&languageIsoCode=DE&validFrom=" +
+        year +
+        "-01-01&validTo=" +
+        year +
+        "-12-31";
 
-            // Check if holidayData array is already populated
-            if (holidayData.length === 0 || holidayYear != year) { // make a holiday list if the list is empty or not current anymore
-                console.log("Getting new holiday list");
-                holidayData = []; // clear old holiday list
-                // Third API request to get the start date of holidays
-                Shelly.call(
-                    "HTTP.GET",
-                    {
-                        url: holidaysURL,
-                    },
-                    function (startDateResult) {
-                        var receivedHolidayData = JSON.parse(startDateResult.body);
-                        var isHoliday = false;
-                        // Append the holiday data to the existing holidayData array
-                        receivedHolidayData.forEach(function (holiday) {
-                            holidayData.push(holiday);
-                            // Extract the year from the start date of the holiday
-                            holidayYear = holiday.startDate.split('-')[0];
-                            //console.log("Holiday Year: ", holidayYear); 
-                        });
-                        // Call function to days
-                        handleHolidays(currentDate, isHoliday, currentCity); // Pass currentCity to handleHolidays
-                    }
-                );
-            } else {
-                //console.log("Holiday data array is already populated. No need to check again.");
+    // Check if holidayData array is already populated
+    if (holidayData.length === 0 || holidayYear != year) {
+        // If the holidayData array is empty or not current anymore, make a new request for the holiday list
+        console.log("Getting new holiday list");
+        holidayData = []; // Clear old holiday list
+        // Third API request to get the start date of holidays
+        Shelly.call(
+            "HTTP.GET",
+            {
+                url: holidaysURL,
+            },
+            function (startDateResult) {
+                var receivedHolidayData = JSON.parse(startDateResult.body);
                 var isHoliday = false;
-                handleHolidays(currentDate, isHoliday, currentCity);
+                // Append the holiday data to the existing holidayData array
+                receivedHolidayData.forEach(function (holiday) {
+                    holidayData.push(holiday);
+                    // Extract the year from the start date of the holiday
+                    holidayYear = holiday.startDate.split("-")[0];
+                    //console.log("Holiday Year: ", holidayYear);
+                });
+                // Call function to handle holidays
+                handleHolidays(currentDate, isHoliday, currentCity); // Pass currentCity to handleHolidays
             }
+        );
+    } else {
+        // If the holidayData array is already populated, proceed to handle holidays directly
+        var isHoliday = false;
+        handleHolidays(currentDate, isHoliday, currentCity);
+    }
 
-            // Check if it's outside of working hours
-             isWorkingHours = false;
-            if (onOffTimes[weekDay]) {
-                for (let i = 0; i < onOffTimes[weekDay].length; i++) {
-                    if (currentTime >= onOffTimes[weekDay][i].on && currentTime <= onOffTimes[weekDay][i].off) {
-                        isWorkingHours = true;
-                        break;
-                    }
-                }
+    // Check if it's outside of working hours
+    isWorkingHours = false;
+    if (onOffTimes[weekDay]) {
+        for (let i = 0; i < onOffTimes[weekDay].length; i++) {
+            if (currentTime >= onOffTimes[weekDay][i].on && currentTime <= onOffTimes[weekDay][i].off) {
+                isWorkingHours = true;
+                break;
             }
+        }
+    }
 
-            if (!isWorkingHours) {
-                manualControl = true; // Enable manual control outside working hours
-                buttonManuallyPressed(function(switchSource) {
-                    //console.log("Switch source:", switchSource);
+    // Enable manual control outside working hours if necessary
+    if (!isWorkingHours) {
+        manualControl = true;
+        buttonManuallyPressed(function (switchSource) {
+            //console.log("Switch source:", switchSource);
+        });
+    } else {
+        manualControl = false;
+    }
+}
+
+  
+  function scheduledTask() {
+    // Get the current system time
+    getSysTime(function (sysTime) {
+        currentTime = sysTime;
+        // Get the current location
+        getCurrentLocation(function (currentCity) {
+            // Check if the current date needs to be updated
+            if (currentDate === "" || currentTime === "00:00") {
+                // If currentDate is empty or the time is 00:00, update the current date
+                getCurrentDate(function (dateTime) {
+                    console.log("Day is over. Total consumed power: ", consumedPower + " Wh");
+                    consumedPower = 0; // Day has changed or first boot, Reset power
+                    weekDay = dateTime.dayOfWeek;
+                    year = dateTime.year;
+                    var month = dateTime.month;
+                    var day = dateTime.day;
+                    currentDate = year + "-" + month + "-" + day;
+                    console.log("New date is being saved:", currentDate);
+                    // After updating the current date, fetch the holiday list
+                    fetchHolidayList(currentCity);
                 });
             } else {
-                manualControl = false; // Reset manualControl to false when it's working hours
+                // If the current date is already set, fetch the holiday list directly
+                fetchHolidayList(currentCity);
             }
         });
     });
 }
-
-scheduledTask();
+  
+  scheduledTask();
