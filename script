@@ -283,9 +283,9 @@ function getSysTime(callback) {
     });
     if (enableLogs) {
         if (isHoliday && holidayName !== "") {
-            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Holiday:", holidayName, "Power:", consumedPower.toFixed(2) + " Wh", "Is Active: ", powerOn);
+            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Holiday:", holidayName, "Power:", consumedPower.toFixed(2) + " Wh", "Is Active: ", powerOn, "Is Manual: ", manualControl);
         } else {
-            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Is a holiday:", isHoliday, "Power:", consumedPower.toFixed(2) + " Wh","Is Active: ", powerOn);
+            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Is a holiday:", isHoliday, "Power:", consumedPower.toFixed(2) + " Wh","Is Active: ", powerOn, "Is Manual: ", manualControl);
         }
         logHours(weekDay);
     }
