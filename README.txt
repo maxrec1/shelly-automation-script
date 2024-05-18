@@ -2,15 +2,14 @@ Shelly Schedule w/Holidays
 Version 4
 
 HOW TO USE
-•Register the Shelly device in the app/cloud, do a firmware update (tested on version 20240425-141453/1.3.0-ga3fdd3d).
+•Register the Shelly device in the app/cloud and update firmware. (tested on version 20240425-141453/1.3.0-ga3fdd3d).
 •Go to http://{SHELLY_IP]/#/settings/debug and enable websocket debug to stream logs.
-•Create one script for"script" one for "watchdog" in “Scripts”. In the first file set /* User defined variables */ and paste the contents of the file. Then copy the contents of "wachdog". Finally run both scripts. By default, both scripts will periodically be run every 5 minutes. This can be changed by editing TIMESPEC within the code or editing the created schedule in “Schedules”. 
+•Create one script for"script" one for "watchdog" in “Scripts”. Paste the contents of "script" in the first one and set /* User defined variables */. 
+•Paste in a new script contents of "wachdog". Finally run both scripts. By default, both scripts will periodically be run every 5 minutes. This can be changed by editing TIMESPEC within the code or editing the created schedule in “Schedules”. 
 •After running the scripts, they will register themselves and create 2 schedules, one for script and one for watchdog.
-•Outside of working hours the device will not automatically turn off if user manually powers it on. 
+•Outside of working hours the device will not automatically turn off if user manually powers it on. Device will power off on next off event.
 •Current device information is displayed to console when script runs. To limit the amount of information output to the console log, set enableLogs to false. 
 •Power consumption is read from device and console logged as Total consumed energy and its CO2 equivalent emissions in grams at the end of each day and every time the script is called.  
-•Add and remove holiday dates by calling respective function, example in line 245.
-•Watchdog script monitors and restarts main script if it fails. 
 •To see the local network debug logs: http://{SHELLY_IP}/debug/log
 •If a script does not register in schedules, create a script and pate contents of "scheduler" and then overwrite the file with the contents of watchdog. 
  
