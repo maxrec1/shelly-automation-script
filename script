@@ -10,16 +10,18 @@
 ////////////---------------------------------User defined variables---------------------////////////////
 // Set On//Off daily schedule for the week  
 var onOffTimes = {
-    "Monday": [{ on: "12:45", off: "12:45" }, { on: "12:47", off: "12:48" }],
+    "Monday": [{ on: "12:45", off: "12:45" }, { on: "12:47", off: "12:48" }],  
     "Tuesday": [{ on: "13:25", off: "13:29" }, { on: "13:32", off: "13:32" }],
     "Wednesday": [{ on: "12:00", off: "13:00" }, { on: "21:00", off: "22:00" }],
     "Thursday": [{ on: "12:00", off: "13:00" }, { on: "21:00", off: "22:00" }],
     "Friday": [{ on: "11:00", off: "14:00" }, { on: "16:00", off: "22:00" }],
-    "Saturday": [{ on: "13:44", off: "13:45" }, { on: "14:00", off: "14:00" }],
+    "Saturday": [{ on: "13:44", off: "13:45" }, { on: "15:00", off: "17:00" }],
     "Sunday": [{ on: "12:00", off: "13:00" }, { on: "21:00", off: "22:00" }]
   };
   
-  var offDays = ["Saturday"]; // Days device is powered off.
+  var offDays = [""]; // Days device is powered off.
+  var addHoliday = ["2024-05-05", "2024-06-06"];
+  var removeHoliday = ["2024-01-01"];
   var scheduleString = "0 */5 * * * *"; // Run the script every  X minutes, change frequency here or directly in "Schedules"
   var enableLogs = true; // Enable console logs.
   
@@ -108,6 +110,8 @@ var onOffTimes = {
   let currentDate = "";
   let sysTime;
   let powerOn;
+  var nameText = "Custom Holiday";
+  var lang = "en";
   
   // Function to log hours for a specific day
   function logHours(day) {
@@ -189,45 +193,61 @@ function getSysTime(callback) {
     );
 }
 
-  // Function to add custom user holidays
-  function addHoliday(startDate, nameText, lang) {
-    lang = lang || "de";
-    holidayData.push({
-        startDate: startDate,
-        name: [{
-            lang: lang,
-            text: nameText,
-        }],
+ // Function to add custom user holidays if they are not already in the list
+function addHolidaysIfNotPresent(addHoliday, nameText, lang) {
+    lang = lang || "en";
+    addHoliday.forEach(function(startDate) {
+        let isAlreadyPresent = false;
+        // Check if the holiday is already in the list
+        for (let i = 0; i < holidayData.length; i++) {
+            if (holidayData[i].startDate === startDate) {
+                isAlreadyPresent = true;
+                //console.log("Holiday on", startDate, "is already added.");
+                break;
+            }
+        }
+        // If the holiday is not already in the list, add it
+        if (!isAlreadyPresent) {
+            holidayData.push({
+                startDate: startDate,
+                name: [{
+                    lang: lang,
+                    text: nameText,
+                }],
+            });
+            console.log("Holiday added:", startDate);
+        }
     });
-  }
+}
+
 
   // Function to remove custom user holidays
-  function removeHoliday(startDate) {
-    // Iterate through holidayData to find the holiday with the given startDate
-    for (let i = 0; i < holidayData.length; i++) {
-        if (holidayData[i].startDate === startDate) {
-            // Remove the holiday from holidayData
-            holidayData.splice(i, 1);
-            if (enableLogs) {
-                console.log("Holiday on " + startDate + " removed.");
+  function removeHolidaysIfPresent(removeHoliday) {
+    removeHoliday.forEach(function(startDate) {
+        let indexToRemove = -1;
+        // Find the index of the holiday to remove
+        for (let i = 0; i < holidayData.length; i++) {
+            if (holidayData[i].startDate === startDate) {
+                indexToRemove = i;
+                break;
             }
-            return; // Exit the function once the holiday is removed
         }
-    }
-    // If no holiday with the given startDate is found
-    if (enableLogs) {
-        console.log("No holiday found on " + startDate + ".");
-    }
-  }
+        // If the holiday is found, remove it
+        if (indexToRemove !== -1) {
+            holidayData.splice(indexToRemove, 1);
+            console.log("Holiday removed:", startDate);
+        } else {
+            //console.log("Holiday on", startDate, "is not present.");
+        }
+    });
+}
+
   
   // Function to check holiday list + daily schedules and turn device on or off
   function handleHolidays(currentDate, isHoliday, currentCity) {
-    //######################################################################################################################      
-    ///////---------------------------------------- ADD MORE HOLIDAYS HERE ------------------------------------------////       
-    // addHoliday("2024-05-10", "User defined holiday 1");
-    // addHoliday("2024-04-26", "User defined holiday 2");
-    // removeHoliday("2024-05-01"); // Remove holiday 
-    //######################################################################################################################
+    addHolidaysIfNotPresent(addHoliday, nameText, lang);
+    removeHolidaysIfPresent(removeHoliday);
+
     // Iterate through each holiday
     holidayData.forEach(function (holiday) {
         // Check if the current date matches the start date of the holiday
