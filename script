@@ -13,13 +13,13 @@ var onOffTimes = {
     "Monday": [{ on: "12:45", off: "12:45" }, { on: "12:47", off: "12:48" }],
     "Tuesday": [{ on: "13:25", off: "13:29" }, { on: "13:32", off: "13:32" }],
     "Wednesday": [{ on: "12:00", off: "13:00" }, { on: "21:00", off: "22:00" }],
-    "Thursday": [{ on: "08:30", off: "10:00" }, { on: "13:00", off: "23:00" }],
+    "Thursday": [{ on: "12:00", off: "13:00" }, { on: "21:00", off: "22:00" }],
     "Friday": [{ on: "11:00", off: "14:00" }, { on: "16:00", off: "22:00" }],
-    "Saturday": [{ on: "13:44", off: "13:45" }, { on: "13:48", off: "13:49" }],
+    "Saturday": [{ on: "13:44", off: "13:45" }, { on: "14:00", off: "14:00" }],
     "Sunday": [{ on: "12:00", off: "13:00" }, { on: "21:00", off: "22:00" }]
   };
   
-  var offDays = ["Sunday"]; // Days device is powered off.
+  var offDays = ["Saturday"]; // Days device is powered off.
   var scheduleString = "0 */5 * * * *"; // Run the script every  X minutes, change frequency here or directly in "Schedules"
   var enableLogs = true; // Enable console logs.
   
@@ -257,20 +257,18 @@ function getSysTime(callback) {
         logHours(weekDay);
     }
   
-    // If no holiday is found, check if it's an offDay
-    if (!isHoliday) {
-        for (let i = 0; i < offDays.length; i++) {
-            if (weekDay === offDays[i]) {
-                if (enableLogs) {
-                    console.log(weekDay + " is registered as an off day in " + currentCity + ". Power off.");
-                }
-                if (!manualControl) {
-                    Shelly.call("Switch.set", { id: 0, on: false }); // Device powered Off
-                }
-                return;
-            }
+// If no holiday is found, check if it's an offDay
+if (!isHoliday) {
+    for (let i = 0; i < offDays.length; i++) {
+        if (weekDay === offDays[i]) {
+            manualControl = true;
+            console.log("Off Day, manual control on");
+            // Return inside the loop when offDay is found
+            return;
         }
-        // Check if it is between onTime and offTime and turn on the device
+    }
+
+       // Check if it is between onTime and offTime and turn on the device
         if (onOffTimes[weekDay]) {
             for (let i = 0; i < onOffTimes[weekDay].length; i++) {
                 if (currentTime >= onOffTimes[weekDay][i].on && currentTime <= onOffTimes[weekDay][i].off) {
@@ -375,5 +373,4 @@ function fetchHolidayList(currentCity) {
         });
     });
 }
-  
   scheduledTask();
