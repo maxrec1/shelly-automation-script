@@ -148,11 +148,12 @@ var onOffTimes = {
         },
         function (result) {
             var data = JSON.parse(result.body);
-            var currentCity = data.city;
+            // Remove var here
+            currentCity = data.city;
             callback(currentCity);
         }
     );
-  } 
+}
 // Function to get current time and check if switch is on
 function getSysTime(callback) {
     Shelly.call(
@@ -369,10 +370,9 @@ function fetchHolidayList(currentCity) {
     // Get the current system time
     getSysTime(function (sysTime) {
         currentTime = sysTime;
-        // Get the current location
-        getCurrentLocation(function (currentCity) {
-            // Check if the current date needs to be updated
-            if (currentDate === "" || currentTime === "00:00") {
+        if (currentDate === "" || currentTime === "00:00") {
+            // Get the current location
+            getCurrentLocation(function (currentCity) {
                 // If currentDate is empty or the time is 00:00, update the current date
                 getCurrentDate(function (dateTime) {
                     console.log("Day is over. Total consumed power: ", consumedPower + " Wh");
@@ -386,11 +386,12 @@ function fetchHolidayList(currentCity) {
                     // After updating the current date, fetch the holiday list
                     fetchHolidayList(currentCity);
                 });
-            } else {
-                // If the current date is already set, fetch the holiday list directly
-                fetchHolidayList(currentCity);
-            }
-        });
+            });
+        } else {
+            // If the current date is already set, fetch the holiday list directly
+            fetchHolidayList(currentCity);
+        }
     });
 }
-  scheduledTask();
+
+scheduledTask();
