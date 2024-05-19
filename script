@@ -20,8 +20,8 @@ var onOffTimes = {
   };
   
   var offDays = [""]; // Days device is powered off.
-  var addHoliday = ["2024-05-05", "2024-06-06"];
-  var removeHoliday = ["2024-01-01"];
+  var addHoliday = []; //["2024-05-05", "2024-06-06"];
+  var removeHoliday = []; //["2024-01-01"];
   var scheduleString = "0 */5 * * * *"; // Run the script every  X minutes, change frequency here or directly in "Schedules"
   var enableLogs = true; // Enable console logs.
   
@@ -128,6 +128,18 @@ var onOffTimes = {
         console.log("No hours recorded for " + day + ".");
     }
   }
+  // Log the week on/off schedule
+  function getWeekSchedule(schedule) {
+    for (var day in schedule) {
+        if (schedule.hasOwnProperty(day)) {
+            var times = schedule[day].map(function(entry) {
+                return "On: " + entry.on + ", Off: " + entry.off;
+            }).join(", ");
+            print(day + ": " + times);
+        }
+    }
+}
+
   
   // Function to measure consumed power
   Shelly.addStatusHandler(function (status) {
@@ -371,6 +383,8 @@ function fetchHolidayList(currentCity) {
     getSysTime(function (sysTime) {
         currentTime = sysTime;
         if (currentDate === "" || currentTime === "00:00") {
+          // Log weekly on/off schedule
+          getWeekSchedule(onOffTimes);
             // Get the current location
             getCurrentLocation(function (currentCity) {
                 // If currentDate is empty or the time is 00:00, update the current date
