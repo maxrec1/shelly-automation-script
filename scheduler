@@ -1,4 +1,5 @@
 // if script or watchdog do not register themselves in schedules, run this script to register scheduledTask(). Then overwrite this file with contents of "script " or "watchdog".
+var scheduleString = "0 */5 * * * *"; // Run the script every 5 minutes, change frecuancy here or directly in "Schedules"ly.GetStatus";
 
 let CONFIG = {
     KVS_KEY: "Script-Schedule-" + JSON.stringify(Shelly.getCurrentScriptId()),
