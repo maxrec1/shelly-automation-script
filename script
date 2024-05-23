@@ -4,15 +4,16 @@
     Time is read locally from device, making main script much more stable. 
     holiday list is made once a year and date is checked once a day. 
     Power consumption is measured and logged at the end of the day. 
-    watchdog restarts only main script. 
+    watchdog restarts only main script.
+    Filtered console information is published to its on topic via MQTT to cloud broker.
 */
 //*************************************************************************************************///
 ////////////---------------------------------User defined variables---------------------////////////////
 // Set On//Off daily schedule for the week  
 var onOffTimes = {
-    "Monday": [{ on: "12:45", off: "12:45" }, { on: "12:47", off: "12:48" }],  
-    "Tuesday": [{ on: "13:25", off: "13:29" }, { on: "13:32", off: "13:32" }],
-    "Wednesday": [{ on: "12:00", off: "13:00" }, { on: "21:00", off: "22:00" }],
+    "Monday": [{ on: "19:29", off: "12:45" }, { on: "12:47", off: "12:48" }],  
+    "Tuesday": [{ on: "19:29", off: "19:31" }, { on: "19:28", off: "19:33" }],
+    "Wednesday": [{ on: "19:29", off: "13:00" }, { on: "21:00", off: "22:00" }],
     "Thursday": [{ on: "12:00", off: "13:00" }, { on: "21:00", off: "22:00" }],
     "Friday": [{ on: "11:00", off: "14:00" }, { on: "16:00", off: "22:00" }],
     "Saturday": [{ on: "13:44", off: "13:45" }, { on: "15:00", off: "17:00" }],
@@ -112,6 +113,7 @@ var onOffTimes = {
   let powerOn;
   var nameText = "Custom Holiday";
   var lang = "en";
+  let SHELLY_ID = undefined;
   
   // Function to log hours for a specific day
   function logHours(day) {
@@ -282,6 +284,18 @@ function addHolidaysIfNotPresent(addHoliday, nameText, lang) {
         }
     });
     if (enableLogs) {
+      Shelly.call("Mqtt.GetConfig", "", function (res, err_code, err_msg, ud) {
+            let SHELLY_ID = res["topic_prefix"];
+            MQTT.publish(SHELLY_ID + "/filtered_data/city", currentCity, 0, false);
+            MQTT.publish(SHELLY_ID + "/filtered_data/day", weekDay, 0, false);
+            MQTT.publish(SHELLY_ID + "/filtered_data/date", currentDate, 0, false);
+            MQTT.publish(SHELLY_ID + "/filtered_data/time", currentTime, 0, false);
+            MQTT.publish(SHELLY_ID + "/filtered_data/isHoliday", isHoliday.toString(), 0, false);
+            MQTT.publish(SHELLY_ID + "/filtered_data/power", consumedPower.toFixed(2) + " Wh", 0, false);
+            MQTT.publish(SHELLY_ID + "/filtered_data/isActive", powerOn.toString(), 0, false);
+            MQTT.publish(SHELLY_ID + "/filtered_data/isManual", manualControl.toString(), 0, false);
+        });
+      
         if (isHoliday && holidayName !== "") {
             console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Holiday:", holidayName, "Power:", consumedPower.toFixed(2) + " Wh", "Is Active: ", powerOn, "Is Manual: ", manualControl);
         } else {
