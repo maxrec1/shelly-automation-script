@@ -291,14 +291,16 @@ function addHolidaysIfNotPresent(addHoliday, nameText, lang) {
             MQTT.publish(SHELLY_ID + "/filtered_data/date", currentDate, 0, false);
             MQTT.publish(SHELLY_ID + "/filtered_data/time", currentTime, 0, false);
             MQTT.publish(SHELLY_ID + "/filtered_data/isHoliday", isHoliday.toString(), 0, false);
-            MQTT.publish(SHELLY_ID + "/filtered_data/power", consumedPower.toFixed(2) + " Wh", 0, false);
             MQTT.publish(SHELLY_ID + "/filtered_data/isActive", powerOn.toString(), 0, false);
+            MQTT.publish(SHELLY_ID + "/filtered_data/power", consumedPower.toFixed(2) + " Wh", 0, false);
+            MQTT.publish(SHELLY_ID + "/filtered_data/power", consumedPower.toFixed(2) * 36 + " Wh", 0, false);
+
         });
       
         if (isHoliday && holidayName !== "") {
-            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Holiday:", holidayName, "Power:", consumedPower.toFixed(2) + " Wh", "Is Active: ", powerOn);
+            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Holiday:", holidayName, + " Wh", "Is Active: ", powerOn,  "Power:", consumedPower.toFixed(2), "CO2:", consumedPower.toFixed(2) * 36 + " g");
         } else {
-            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Is a holiday:", isHoliday, "Power:", consumedPower.toFixed(2) + " Wh","Is Active: ", powerOn);
+            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Is a holiday:", isHoliday, "Is Active: ", powerOn,  "Power:", consumedPower.toFixed(2), "CO2:", consumedPower.toFixed(2) * 36 + " g");
         }
         logHours(weekDay);
     }
