@@ -287,19 +287,23 @@ function addHolidaysIfNotPresent(addHoliday, nameText, lang) {
             return;
         }
     });
+    
     if (enableLogs) {
-      Shelly.call("Mqtt.GetConfig", "", function (res, err_code, err_msg, ud) {
+        Shelly.call("Mqtt.GetConfig", "", function (res, err_code, err_msg, ud) {
             let SHELLY_ID = res["topic_prefix"];
-            MQTT.publish(SHELLY_ID + "/filtered_data/city", currentCity, 0, false);
-            MQTT.publish(SHELLY_ID + "/filtered_data/day", weekDay, 0, false);
-            MQTT.publish(SHELLY_ID + "/filtered_data/date", currentDate, 0, false);
-            MQTT.publish(SHELLY_ID + "/filtered_data/time", currentTime, 0, false);
-            MQTT.publish(SHELLY_ID + "/filtered_data/isHoliday", isHoliday.toString(), 0, false);
-            MQTT.publish(SHELLY_ID + "/filtered_data/isActive", powerOn.toString(), 0, false);
-            MQTT.publish(SHELLY_ID + "/filtered_data/power", consumedPower.toFixed(2) + " Wh", 0, false);
-            MQTT.publish(SHELLY_ID + "/filtered_data/CO2", consumedPower.toFixed(2) * 36 + " Wh", 0, false);
-            MQTT.publish(SHELLY_ID + "/filtered_data/schedule", getWeekSchedule(onOffTimes), 0, false);
-
+            let jsonData = {
+                city: currentCity,
+                day: weekDay,
+                date: currentDate,
+                time: currentTime,
+                isHoliday: isHoliday,
+                isActive: powerOn,
+                power: consumedPower.toFixed(2) + "Wh",
+                CO2: (consumedPower.toFixed(2) * 36) + "g",
+                schedule: getWeekSchedule(onOffTimes)
+            };
+            let jsonString = JSON.stringify(jsonData);
+            MQTT.publish(SHELLY_ID + "/filtered_data", jsonString, 0, false);
         });
       
         if (isHoliday && holidayName !== "") {
