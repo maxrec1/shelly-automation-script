@@ -293,13 +293,12 @@ function addHolidaysIfNotPresent(addHoliday, nameText, lang) {
             MQTT.publish(SHELLY_ID + "/filtered_data/isHoliday", isHoliday.toString(), 0, false);
             MQTT.publish(SHELLY_ID + "/filtered_data/power", consumedPower.toFixed(2) + " Wh", 0, false);
             MQTT.publish(SHELLY_ID + "/filtered_data/isActive", powerOn.toString(), 0, false);
-            MQTT.publish(SHELLY_ID + "/filtered_data/isManual", manualControl.toString(), 0, false);
         });
       
         if (isHoliday && holidayName !== "") {
-            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Holiday:", holidayName, "Power:", consumedPower.toFixed(2) + " Wh", "Is Active: ", powerOn, "Is Manual: ", manualControl);
+            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Holiday:", holidayName, "Power:", consumedPower.toFixed(2) + " Wh", "Is Active: ", powerOn);
         } else {
-            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Is a holiday:", isHoliday, "Power:", consumedPower.toFixed(2) + " Wh","Is Active: ", powerOn, "Is Manual: ", manualControl);
+            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Is a holiday:", isHoliday, "Power:", consumedPower.toFixed(2) + " Wh","Is Active: ", powerOn);
         }
         logHours(weekDay);
     }
