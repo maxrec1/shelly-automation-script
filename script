@@ -293,7 +293,7 @@ function addHolidaysIfNotPresent(addHoliday, nameText, lang) {
             MQTT.publish(SHELLY_ID + "/filtered_data/isHoliday", isHoliday.toString(), 0, false);
             MQTT.publish(SHELLY_ID + "/filtered_data/isActive", powerOn.toString(), 0, false);
             MQTT.publish(SHELLY_ID + "/filtered_data/power", consumedPower.toFixed(2) + " Wh", 0, false);
-            MQTT.publish(SHELLY_ID + "/filtered_data/power", consumedPower.toFixed(2) * 36 + " Wh", 0, false);
+            MQTT.publish(SHELLY_ID + "/filtered_data/CO2", consumedPower.toFixed(2) * 36 + " Wh", 0, false);
 
         });
       
