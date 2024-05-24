@@ -131,15 +131,19 @@ var onOffTimes = {
     }
   }
   // Log the week on/off schedule
-  function getWeekSchedule(schedule) {
+ function getWeekSchedule(schedule) {
+    var result = ""; // Initialize an empty string to accumulate the result
+    
     for (var day in schedule) {
         if (schedule.hasOwnProperty(day)) {
             var times = schedule[day].map(function(entry) {
                 return "On: " + entry.on + ", Off: " + entry.off;
             }).join(", ");
-            print(day + ": " + times);
+            result += day + ": " + times + "\n"; // Append each day's schedule to the result
         }
     }
+    
+    return result; // Return the accumulated result
 }
 
   
