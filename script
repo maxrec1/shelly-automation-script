@@ -300,7 +300,7 @@ function addHolidaysIfNotPresent(addHoliday, nameText, lang) {
                 isActive: powerOn,
                 power: consumedPower.toFixed(2) + "Wh",
                 CO2: (consumedPower.toFixed(2) * 36) + "g",
-                schedule: getWeekSchedule(onOffTimes)
+                //schedule: getWeekSchedule(onOffTimes)
             };
             let jsonString = JSON.stringify(jsonData);
             MQTT.publish(SHELLY_ID + "/filtered_data", jsonString, 0, false);
