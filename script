@@ -299,7 +299,7 @@ function addHolidaysIfNotPresent(addHoliday, nameText, lang) {
                 isHoliday: isHoliday,
                 isActive: powerOn,
                 power: consumedPower.toFixed(2) + "Wh",
-                CO2: (consumedPower.toFixed(2) * 36) + "g",
+                CO2: (consumedPower.toFixed(2) * 76/1000) + "g",
                 //schedule: getWeekSchedule(onOffTimes)
             };
             let jsonString = JSON.stringify(jsonData);
@@ -307,9 +307,9 @@ function addHolidaysIfNotPresent(addHoliday, nameText, lang) {
         });
       
         if (isHoliday && holidayName !== "") {
-            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Holiday:", holidayName, + " Wh", "Is Active: ", powerOn,  "Power:", consumedPower.toFixed(2) + "Wh", "CO2:", consumedPower.toFixed(2) * 36 + " g");
+            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Holiday:", holidayName, + " Wh", "Is Active: ", powerOn,  "Power:", consumedPower.toFixed(2) + "Wh", "CO2:", consumedPower.toFixed(2) * 76/1000 + " g");
         } else {
-            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Is a holiday:", isHoliday, "Is Active: ", powerOn,  "Power:", consumedPower.toFixed(2) + "Wh", "CO2:", consumedPower.toFixed(2) * 36 + " g");
+            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Is a holiday:", isHoliday, "Is Active: ", powerOn,  "Power:", consumedPower.toFixed(2) + "Wh", "CO2:", consumedPower.toFixed(2) * 76/1000 + " g");
         }
         logHours(weekDay);
     }
