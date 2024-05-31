@@ -1,12 +1,3 @@
-// Scheduler test. gets device location and time locally from system and checks the date once a day when day changes. 
-// Whats new: 
-/*  Url is obtained automatically, no need to edit the scripts.
-    Time is read locally from device, making main script much more stable. 
-    holiday list is made once a year and date is checked once a day. 
-    Power consumption is measured and logged at the end of the day. 
-    watchdog restarts only main script.
-    Filtered console information is published to its on topic via MQTT to cloud broker.
-*/
 //*************************************************************************************************///
 ////////////---------------------------------User defined variables---------------------////////////////
 // Set On//Off daily schedule for the week  
