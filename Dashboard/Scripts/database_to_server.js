@@ -73,7 +73,7 @@ app.get('/api/:table', async (req, res) => {
     const [rows] = await pool.query(`SELECT * FROM ??`, [table]);
     res.json(rows);
   } catch (error) {
- console.error(`Error fetching data from table ${table}:`, error);
+    console.error(`Error fetching data from table ${table}:`, error);
     res.status(500).json({ error: `An error occurred while fetching data from table ${table}: ${error.message}` });
   }
 });
@@ -106,7 +106,7 @@ app.post('/shellyplusplugs-:table/command/switch:0', async (req, res) => {
     });
   } catch (error) {
     console.error(`Error processing request for table ${table}:`, error);
-  res.status(500).json({ error: `An error occurred while processing request for table ${table}: ${error.message}`});
+    res.status(500).json({ error: `An error occurred while processing request for table ${table}: ${error.message}`});
   }
 });
 
