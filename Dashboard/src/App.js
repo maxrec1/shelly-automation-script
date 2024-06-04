@@ -4,12 +4,19 @@ import { Chart, LinearScale, PointElement, LineElement, Title, CategoryScale } f
 import TableWithLastEntry from './TableWithLastEntry';
 import ChartWithLastEntryButton from './ChartWithLastEntryButton';
 import ToggleSwitch from './ToggleSwitch';
+import WorkingTimesForm from './WorkingTimesForm';
 
 Chart.register(LinearScale, PointElement, LineElement, Title, CategoryScale);
 
 function App() {
   const [tables, setTables] = useState([]);
   const [error, setError] = useState(null);
+
+  // Define yourSubmitFunction to handle form submission
+  const yourSubmitFunction = (workingTimes) => {
+    // Here you can do whatever you want with the submitted workingTimes data
+    console.log('Submitted working times:', workingTimes);
+  };
 
   useEffect(() => {
     const fetchTables = async () => {
@@ -55,6 +62,7 @@ function App() {
                   <ToggleSwitch tableName={table} />
                 </div>
               </div>
+              <WorkingTimesForm onSubmit={yourSubmitFunction} />
             </div>
           ))
         ) : (
