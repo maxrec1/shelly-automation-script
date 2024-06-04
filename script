@@ -1,9 +1,18 @@
+// Scheduler test. gets device location and time locally from system and checks the date once a day when day changes. 
+// Whats new: 
+/*  Url is obtained automatically, no need to edit the scripts.
+    Time is read locally from device, making main script much more stable. 
+    holiday list is made once a year and date is checked once a day. 
+    Power consumption is measured and logged at the end of the day. 
+    watchdog restarts only main script.
+    Filtered console information is published to its on topic via MQTT to cloud broker.
+*/
 //*************************************************************************************************///
 ////////////---------------------------------User defined variables---------------------////////////////
 // Set On//Off daily schedule for the week  
 var onOffTimes = {
     "Monday": [{ on: "19:29", off: "12:45" }, { on: "12:47", off: "12:48" }],  
-    "Tuesday": [{ on: "19:29", off: "19:31" }, { on: "19:28", off: "19:33" }],
+    "Tuesday": [{ on: "12:51", off: "12:54" }, { on: "12:56", off: "12:58" }],
     "Wednesday": [{ on: "19:29", off: "13:00" }, { on: "21:00", off: "22:00" }],
     "Thursday": [{ on: "12:00", off: "13:00" }, { on: "21:00", off: "22:00" }],
     "Friday": [{ on: "11:00", off: "14:00" }, { on: "16:00", off: "22:00" }],
@@ -290,7 +299,7 @@ function addHolidaysIfNotPresent(addHoliday, nameText, lang) {
                 isHoliday: isHoliday,
                 isActive: powerOn,
                 power: consumedPower.toFixed(2) + "Wh",
-                CO2: (consumedPower.toFixed(2) * 76/1000) + "g",
+                CO2: (consumedPower.toFixed(2) * 36).toFixed(2) + "g",
                 //schedule: getWeekSchedule(onOffTimes)
             };
             let jsonString = JSON.stringify(jsonData);
@@ -298,9 +307,9 @@ function addHolidaysIfNotPresent(addHoliday, nameText, lang) {
         });
       
         if (isHoliday && holidayName !== "") {
-            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Holiday:", holidayName, + " Wh", "Is Active: ", powerOn,  "Power:", consumedPower.toFixed(2) + "Wh", "CO2:", consumedPower.toFixed(2) * 76/1000 + " g");
+            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Holiday:", holidayName, + " Wh", "Is Active: ", powerOn,  "Power:", consumedPower.toFixed(2) + "Wh", "CO2:", consumedPower.toFixed(2) * 36 + " g");
         } else {
-            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Is a holiday:", isHoliday, "Is Active: ", powerOn,  "Power:", consumedPower.toFixed(2) + "Wh", "CO2:", consumedPower.toFixed(2) * 76/1000 + " g");
+            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Is a holiday:", isHoliday, "Is Active: ", powerOn,  "Power:", consumedPower.toFixed(2) + "Wh", "CO2:", consumedPower.toFixed(2) * 36 + " g");
         }
         logHours(weekDay);
     }
