@@ -13,6 +13,7 @@ const WorkingTimesForm = ({ onSubmit }) => {
     Saturday: [],
     Sunday: [],
   });
+  const [showSchedule, setShowSchedule] = useState(false); // State to manage schedule display
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
   const handleAddEvent = (day) => {
@@ -42,40 +43,49 @@ const WorkingTimesForm = ({ onSubmit }) => {
   };
 
   return (
-    <div>
-      <Space direction="vertical">
-        {daysOfWeek.map(day => (
-          <div key={day}>
-            <span>{day}</span>
-            <Button type="primary" onClick={() => handleAddEvent(day)}>
-              Add Event
-            </Button>
-            {events[day] && events[day].map((event, index) => (
-              <div key={index}>
-                <TimePicker
-                  onChange={(time, timeString) => handleTimeChange(day, index, timeString, 'on')}
-                  value={event.on ? moment(event.on, 'HH:mm') : null}
-                  format={'HH:mm'}
-                  showNow={false}
-                  showOk={false}
-                />
-                <TimePicker
-                  onChange={(time, timeString) => handleTimeChange(day, index, timeString, 'off')}
-                  value={event.off ? moment(event.off, 'HH:mm') : null}
-                  format={'HH:mm'}
-                  showNow={false}
-                  showOk={false}
-                />
-                <Button type="danger" onClick={() => handleDeleteEvent(day, index)} icon={<CloseOutlined />} />
-              </div>
-            ))}
-          </div>
-        ))}
-      </Space>
+    <div style={{ display: 'flex', justifyContent: 'center' }}>
+      {/* Show/hide schedule button */}
+      <div style={{ marginBottom: '10px' }}> {/* Add margin-bottom */}
+        <Button onClick={() => setShowSchedule(!showSchedule)}>
+          {showSchedule ? 'Hide Schedule' : 'Show Schedule'}
+        </Button>
+      </div>
 
-      <Button type="primary" onClick={handleSubmit}>
-        Submit
-      </Button>
+      {/* Render schedule below the button */}
+      {showSchedule && (
+        <Space direction="vertical" style={{ marginTop: '10px' }}>
+          {daysOfWeek.map(day => (
+            <div key={day} style={{ marginBottom: '10px' }}> {/* Add margin-bottom */}
+              <span style={{ marginRight: '10px' }}>{day}</span> {/* Add margin-right */}
+              <Button type="primary" onClick={() => handleAddEvent(day)}>
+                Add Event
+              </Button>
+              {events[day] && events[day].map((event, index) => (
+                <div key={index}>
+                 <TimePicker
+  onCalendarChange={(time, timeString) => handleTimeChange(day, index, timeString, 'on')}
+  value={event.on ? moment(event.on, 'HH:mm') : null}
+  format={'HH:mm'}
+  showNow={false}
+/>
+<TimePicker
+  onCalendarChange={(time, timeString) => handleTimeChange(day, index, timeString, 'off')}
+  value={event.off ? moment(event.off, 'HH:mm') : null}
+  format={'HH:mm'}
+  showNow={false}
+/>
+
+                  <Button type="danger" onClick={() => handleDeleteEvent(day, index)} icon={<CloseOutlined />} />
+                </div>
+              ))}
+            </div>
+          ))}
+          {/* Submit button */}
+          <Button type="primary" onClick={handleSubmit}>
+            Submit
+          </Button>
+        </Space>
+      )}
     </div>
   );
 };
