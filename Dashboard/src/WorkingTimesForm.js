@@ -1,9 +1,10 @@
+// WorkingTimesForm.js
 import React, { useState } from 'react';
 import { TimePicker, Button, Space } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 import moment from 'moment';
 
-const WorkingTimesForm = ({ onSubmit }) => {
+const WorkingTimesForm = ({ onSubmit, tableName }) => { // Accept tableName prop
   const [events, setEvents] = useState({
     Monday: [],
     Tuesday: [],
@@ -38,8 +39,8 @@ const WorkingTimesForm = ({ onSubmit }) => {
   };
 
   const handleSubmit = () => {
-    console.log('onOffTimes = ', JSON.stringify(events, null, 2));
-    onSubmit(events);
+    console.log(`onOffTimes for ${tableName} = `, JSON.stringify(events, null, 2)); // Include tableName
+    onSubmit(tableName, events); // Include tableName when calling onSubmit
   };
 
   return (
