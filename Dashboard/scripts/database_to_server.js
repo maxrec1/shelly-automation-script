@@ -2,6 +2,8 @@ const mqtt = require('mqtt');
 const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
+const axios = require('axios');
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -42,7 +44,6 @@ app.use(express.json()); // Middleware to parse JSON bodies
 app.use((req, res, next) => {
   if (req.method === 'POST') {
     console.log(`${req.method} ${req.path}`);
-    console.log('Request Body:', req.body); // Log request body
   }
   next();
 });
@@ -78,37 +79,51 @@ app.get('/api/:table', async (req, res) => {
   }
 });
 
-// Dynamic endpoint to send MQTT message
-app.post('/shellyplusplugs-:table/command/switch:0', async (req, res) => {
-  const table = req.params.table;
-  const { message } = req.body;
+// Define a variable to store the posted data
+let scheduledEvents = {};
 
-  if (!message) {
-    return res.status(400).json({ error: 'Message is required' });
+// POST endpoint to schedule events
+app.post('/shellyplusplugs-:table/schedule', async (req, res) => {
+  const table = req.params.table;
+  const { events } = req.body;
+
+  if (!events) {
+    return res.status(400).json({ error: 'Events data is required' });
   }
 
   try {
-    const [tables] = await pool.query("SHOW TABLES");
-    const tableNames = tables.map(row => Object.values(row)[0]);
+    // Store the posted events data
+    scheduledEvents[table] = events;
 
-    if (!tableNames.includes(table)) {
-      throw new Error(`Table '${table}' does not exist`);
-    }
-
-    const topic = `shellyplusplugs-${table}/command/switch:0`;
-    client.publish(topic, message, (err) => {
-      if (err) {
-        console.error('Failed to publish message:', err);
-        return res.status(500).json({ error: 'Failed to publish message' });
-      }
-
-      res.json({ success: true, message: 'Message sent' });
-    });
+    // Respond with success message
+    res.json({ success: true, message: 'Events scheduled successfully' });
   } catch (error) {
-    console.error(`Error processing request for table ${table}:`, error);
-    res.status(500).json({ error: `An error occurred while processing request for table ${table}: ${error.message}`});
+    console.error(`Error processing schedule request for table ${table}:`, error);
+    res.status(500).json({ error: `An error occurred while processing schedule request for table ${table}: ${error.message}` });
   }
 });
+
+// GET endpoint to retrieve scheduled events
+app.get('/shellyplusplugs-:table/schedule', async (req, res) => {
+  const table = req.params.table;
+
+  try {
+    // Retrieve the scheduled events data for the specified table
+    const events = scheduledEvents[table];
+
+    if (!events) {
+      return res.status(404).json({ error: `No events scheduled for table '${table}'` });
+    }
+
+    // Respond with the scheduled events data
+    res.json(events);
+  } catch (error) {
+    console.error(`Error retrieving scheduled events for table ${table}:`, error);
+    res.status(500).json({ error: `An error occurred while retrieving scheduled events for table ${table}: ${error.message}` });
+  }
+});
+
+
 
 // Start the server
 app.listen(PORT, () => {
