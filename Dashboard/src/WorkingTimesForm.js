@@ -4,7 +4,6 @@ import { CloseOutlined } from '@ant-design/icons';
 import moment from 'moment';
 
 const WorkingTimesForm = ({ onSubmit }) => {
-  const [workingTimes, setWorkingTimes] = useState([]);
   const [events, setEvents] = useState({
     Monday: [],
     Tuesday: [],
@@ -29,12 +28,6 @@ const WorkingTimesForm = ({ onSubmit }) => {
       i === index ? { ...event, [field]: timeString } : event
     );
     setEvents(updatedEvents);
-
-    // Check if both 'on' and 'off' fields are filled for all events
-    if (updatedEvents[day].every(event => event.on && event.off)) {
-      // Save the working times
-      setWorkingTimes([...workingTimes, { day, events: updatedEvents[day] }]);
-    }
   };
 
   const handleDeleteEvent = (day, index) => {
@@ -44,7 +37,8 @@ const WorkingTimesForm = ({ onSubmit }) => {
   };
 
   const handleSubmit = () => {
-    onSubmit(workingTimes);
+    console.log('onOffTimes = ', JSON.stringify(events, null, 2));
+    onSubmit(events);
   };
 
   return (
@@ -60,7 +54,6 @@ const WorkingTimesForm = ({ onSubmit }) => {
               <div key={index}>
                 <TimePicker
                   onChange={(time, timeString) => handleTimeChange(day, index, timeString, 'on')}
-                  defaultValue={moment('00:00', 'HH:mm')}
                   value={event.on ? moment(event.on, 'HH:mm') : null}
                   format={'HH:mm'}
                   showNow={false}
@@ -68,7 +61,6 @@ const WorkingTimesForm = ({ onSubmit }) => {
                 />
                 <TimePicker
                   onChange={(time, timeString) => handleTimeChange(day, index, timeString, 'off')}
-                  defaultValue={moment('00:00', 'HH:mm')}
                   value={event.off ? moment(event.off, 'HH:mm') : null}
                   format={'HH:mm'}
                   showNow={false}
@@ -81,14 +73,6 @@ const WorkingTimesForm = ({ onSubmit }) => {
         ))}
       </Space>
 
-      <div>
-        {workingTimes.map((time, index) => (
-          <div key={index}>
-            <p>{`Day: ${time.day}, Events: ${JSON.stringify(time.events)}`}</p>
-          </div>
-        ))}
-      </div>
-
       <Button type="primary" onClick={handleSubmit}>
         Submit
       </Button>
@@ -97,4 +81,3 @@ const WorkingTimesForm = ({ onSubmit }) => {
 };
 
 export default WorkingTimesForm;
-
