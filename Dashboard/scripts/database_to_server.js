@@ -79,6 +79,39 @@ app.get('/api/:table', async (req, res) => {
   }
 });
 
+// Dynamic endpoint to send MQTT message
+app.post('/shellyplusplugs-:table/command/switch:0', async (req, res) => {
+  const table = req.params.table;
+  const { message } = req.body;
+
+  if (!message) {
+    return res.status(400).json({ error: 'Message is required' });
+  }
+
+  try {
+    const [tables] = await pool.query("SHOW TABLES");
+    const tableNames = tables.map(row => Object.values(row)[0]);
+
+    if (!tableNames.includes(table)) {
+      throw new Error(`Table '${table}' does not exist`);
+    }
+
+    const topic = `shellyplusplugs-${table}/command/switch:0`;
+    client.publish(topic, message, (err) => {
+      if (err) {
+        console.error('Failed to publish message:', err);
+        return res.status(500).json({ error: 'Failed to publish message' });
+      }
+
+      res.json({ success: true, message: 'Message sent' });
+    });
+  } catch (error) {
+    console.error(`Error processing request for table ${table}:`, error);
+    res.status(500).json({ error: `An error occurred while processing request for table ${table}: ${error.message}`});
+  }
+});
+
+
 // Define a variable to store the posted data
 let scheduledEvents = {};
 
