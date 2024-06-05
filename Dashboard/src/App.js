@@ -1,3 +1,4 @@
+// App.js
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import { Chart, LinearScale, PointElement, LineElement, Title, CategoryScale } from 'chart.js';
@@ -13,9 +14,8 @@ function App() {
   const [error, setError] = useState(null);
 
   // Define yourSubmitFunction to handle form submission
-  const yourSubmitFunction = (workingTimes) => {
-    // Here you can do whatever you want with the submitted workingTimes data
-    console.log('Submitted working times:', workingTimes);
+  const yourSubmitFunction = (tableName, workingTimes) => {
+    console.log(`Submitted working times for table ${tableName}:`, workingTimes);
   };
 
   useEffect(() => {
@@ -62,7 +62,7 @@ function App() {
                   <ToggleSwitch tableName={table} />
                 </div>
               </div>
-              <WorkingTimesForm onSubmit={yourSubmitFunction} />
+              <WorkingTimesForm onSubmit={yourSubmitFunction} tableName={table} /> {/* Pass tableName */}
             </div>
           ))
         ) : (
