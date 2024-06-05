@@ -93,6 +93,7 @@ var nameText = "Custom Holiday";
 var lang = "en";
 let SHELLY_ID = undefined;
 let onOffTimes;
+let macAddress;
 
 function fetchAndLogSchedule(macAddress) {
     var url = "http://185.164.4.216:5000/shellyplusplugs-" + macAddress + "/schedule";
@@ -429,12 +430,14 @@ function scheduledTask() {
         }
     });
 
-    // Get the MAC address and fetch the schedule
+    // Get the MAC address
     Shelly.call(
         "Shelly.GetConfig",
         {},
         function (result) {
-            var macAddress = result.mac;
+            macAddress = result.sys.mac; // Use result instead of response
+            console.log(macAddress); 
+            // Call fetchAndLogSchedule only after macAddress is retrieved
             fetchAndLogSchedule(macAddress);
         }
     );
