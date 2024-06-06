@@ -95,6 +95,28 @@ let SHELLY_ID = undefined;
 let onOffTimes;
 let macAddress;
 
+function getMacAddress(macUrl, callback) {
+    Shelly.call(
+        "HTTP.GET", {
+            "url": macUrl,
+        },
+        function (result) {
+            let response = JSON.parse(result.body);
+            let macAddress = response.sys.mac.toLowerCase();
+            callback(macAddress); // Call the callback function with the retrieved MAC address
+        }
+    );
+}
+
+// Define a callback function to be called after retrieving the MAC address
+function onMacAddressReceived(macAddress) {
+    fetchAndLogSchedule(macAddress); // Call fetchAndLogSchedule with the retrieved MAC address
+}
+
+// Call getMacAddress with the callback function
+getMacAddress(url, onMacAddressReceived);
+
+// Modify fetchAndLogSchedule to accept the MAC address as a parameter
 function fetchAndLogSchedule(macAddress) {
     var url = "http://185.164.4.216:5000/shellyplusplugs-" + macAddress + "/schedule";
 
@@ -117,6 +139,7 @@ function fetchAndLogSchedule(macAddress) {
         }
     }
 }
+
 
 // Function to log hours for a specific day
 function logHours(day) {
@@ -404,43 +427,35 @@ function fetchHolidayList(currentCity) {
 }
 
 function scheduledTask() {
-    // Get the current system time
-    getSysTime(function (sysTime) {
-        currentTime = sysTime;
-        if (currentDate === "" || currentTime === "00:00") {
-            // Get the current location
-            getCurrentLocation(function (currentCity) {
-                // If currentDate is empty or the time is 00:00, update the current date
-                getCurrentDate(function (dateTime) {
-                    console.log("Day is over. Total consumed power: ", consumedPower + " Wh");
-                    consumedPower = 0; // Day has changed or first boot, Reset power
-                    weekDay = dateTime.dayOfWeek;
-                    year = dateTime.year;
-                    var month = dateTime.month;
-                    var day = dateTime.day;
-                    currentDate = year + "-" + month + "-" + day;
-                    console.log("New date is being saved:", currentDate);
-                    // After updating the current date, fetch the holiday list
-                    fetchHolidayList(currentCity);
+    getMacAddress(url, function(macAddress) {
+        fetchAndLogSchedule(macAddress);
+        // Get the current system time
+        getSysTime(function(sysTime) {
+            currentTime = sysTime;
+            if (currentDate === "" || currentTime === "00:00") {
+                // Get the current location
+                getCurrentLocation(function(currentCity) {
+                    // If currentDate is empty or the time is 00:00, update the current date
+                    getCurrentDate(function(dateTime) {
+                        console.log("Day is over. Total consumed power: ", consumedPower + " Wh");
+                        consumedPower = 0; // Day has changed or first boot, Reset power
+                        weekDay = dateTime.dayOfWeek;
+                        year = dateTime.year;
+                        var month = dateTime.month;
+                        var day = dateTime.day;
+                        currentDate = year + "-" + month + "-" + day;
+                        console.log("New date is being saved:", currentDate);
+                        // After updating the current date, fetch the holiday list
+                        fetchHolidayList(currentCity);
+                    });
                 });
-            });
-        } else {
-            // If the current date is already set, fetch the holiday list directly
-            fetchHolidayList(currentCity);
-        }
+            } else {
+                // If the current date is already set, fetch the holiday list directly
+                fetchHolidayList(currentCity);
+            }
+        });
     });
-
-    // Get the MAC address
-    Shelly.call(
-        "Shelly.GetConfig",
-        {},
-        function (result) {
-            macAddress = result.sys.mac; // Use result instead of response
-            console.log(macAddress); 
-            // Call fetchAndLogSchedule only after macAddress is retrieved
-            fetchAndLogSchedule(macAddress);
-        }
-    );
 }
 
+// Call the scheduledTask() function to initiate the process
 scheduledTask();
