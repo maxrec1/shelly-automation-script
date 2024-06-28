@@ -28,8 +28,8 @@ def create_table(cursor, table_name):
         isActive VARCHAR(255),
         power FLOAT,
         CO2 FLOAT,
-        client VARCHAR(255) DEFAULT NULL,
-        location VARCHAR(255) DEFAULT NULL
+        client VARCHAR(255),
+        location VARCHAR(255)
     )
     """
     print("SQL statement:", sql)
@@ -42,7 +42,7 @@ def ensure_columns(cursor, table_name):
         cursor.execute(f"SHOW COLUMNS FROM {table_name} LIKE '{column}'")
         result = cursor.fetchone()
         if not result:
-            cursor.execute(f"ALTER TABLE {table_name} ADD {column} VARCHAR(255) DEFAULT NULL")
+            cursor.execute(f"ALTER TABLE {table_name} ADD {column} VARCHAR(255)")
 
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code " + str(rc))
@@ -70,12 +70,30 @@ def on_message(client, userdata, msg):
     co2_value = float(data["CO2"].replace('g', ''))
     time_value = data["time"][:5]  # Truncate the time string to "HH:MM"
 
+    # Check if client and location are already present in the database for this entry
+    cursor.execute(f"SELECT client, location FROM {table_name} WHERE id = %s", (data["id"],))
+    existing_data = cursor.fetchone()
+    if existing_data:
+        current_client = existing_data[0]
+        current_location = existing_data[1]
+    else:
+        current_client = None
+        current_location = None
+
+    # Ensure client and location values are either from MQTT data or retain existing values
+    client_value = data.get("client", current_client)
+    location_value = data.get("location", current_location)
+
     # Insert data into the corresponding table
     sql = f"""
-    INSERT INTO {table_name} (country, city, day, date, time, isHoliday, isActive, power, CO2)
-    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+    INSERT INTO {table_name} (country, city, day, date, time, isHoliday, isActive, power, CO2, client, location)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
-    val = (data["country"], data["city"], data["day"], data["date"], time_value, data["isHoliday"], data["isActive"], power_value, co2_value)
+    val = (
+        data["country"], data["city"], data["day"], data["date"], time_value,
+        data["isHoliday"], data["isActive"], power_value, co2_value,
+        client_value, location_value
+    )
     cursor.execute(sql, val)
     conn.commit()
 
