@@ -70,19 +70,15 @@ def on_message(client, userdata, msg):
     co2_value = float(data["CO2"].replace('g', ''))
     time_value = data["time"][:5]  # Truncate the time string to "HH:MM"
 
-    # Check if client and location are already present in the database for this entry
-    cursor.execute(f"SELECT client, location FROM {table_name} WHERE id = %s", (data["id"],))
-    existing_data = cursor.fetchone()
-    if existing_data:
-        current_client = existing_data[0]
-        current_location = existing_data[1]
-    else:
-        current_client = None
-        current_location = None
+    # Get previous client and location values
+    cursor.execute(f"SELECT client, location FROM {table_name} ORDER BY id DESC LIMIT 1")
+    previous_record = cursor.fetchone()
+    previous_client = previous_record[0] if previous_record else None
+    previous_location = previous_record[1] if previous_record else None
 
-    # Ensure client and location values are either from MQTT data or retain existing values
-    client_value = data.get("client", current_client)
-    location_value = data.get("location", current_location)
+    # Ensure client and location values are from MQTT data if they are not provided
+    client_value = data.get("client", previous_client)
+    location_value = data.get("location", previous_location)
 
     # Insert data into the corresponding table
     sql = f"""
@@ -97,7 +93,13 @@ def on_message(client, userdata, msg):
     cursor.execute(sql, val)
     conn.commit()
 
+    # Get the last inserted ID
+    last_insert_id = cursor.lastrowid
+    print(f"Inserted record with ID: {last_insert_id}")
+
     conn.close()
+
+
 
 client = mqtt.Client()
 client.username_pw_set(username, password)
