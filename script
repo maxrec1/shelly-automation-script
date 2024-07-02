@@ -293,6 +293,10 @@ function removeHolidaysIfPresent(removeHoliday) {
 
 // Function to check holiday list + daily schedules and turn device on or off
 function handleHolidays(currentDate, isHoliday, currentCity) {
+   fetchedHolidays.forEach(function (holiday) {
+        console.log("Holiday Name:", holiday[0], "Date:", holiday[1]);
+    });
+  
     addHolidaysIfNotPresent(addHoliday, nameText, lang);
     removeHolidaysIfPresent(removeHoliday);
 
@@ -330,6 +334,7 @@ function handleHolidays(currentDate, isHoliday, currentCity) {
                 isActive: powerOn,
                 power: consumedPower.toFixed(2) + "Wh",
                 CO2: (consumedPower.toFixed(2) * 36) + "g",
+                fetchedHolidays: fetchedHolidays
                 //schedule: getWeekSchedule(onOffTimes)
             };
             let jsonString = JSON.stringify(jsonData);
@@ -372,66 +377,52 @@ function handleHolidays(currentDate, isHoliday, currentCity) {
         }
     }
 }
-
+var fetchedHolidays =[];
 // Function to fetch the holiday list
 function fetchHolidayList(currentCity) {
     var holidaysURL =
-        "https://openholidaysapi.org/PublicHolidays?countryIsoCode=AT&languageIsoCode=DE&validFrom=" +
+        "https://openholidaysapi.org/PublicHolidays?countryIsoCode=" + currentCountry + "&languageIsoCode=DE&validFrom=" +
         year +
         "-01-01&validTo=" +
         year +
         "-12-31";
 
-    // Check if holidayData array is already populated
-    if (holidayData.length === 0 || holidayYear != year) {
-        // If the holidayData array is empty or not current anymore, make a new request for the holiday list
-        console.log("Getting new holiday list");
-        holidayData = []; // Clear old holiday list
-        // Third API request to get the start date of holidays
-        Shelly.call(
-            "HTTP.GET",
-            {
-                url: holidaysURL,
-            },
-            function (startDateResult) {
-                var receivedHolidayData = JSON.parse(startDateResult.body);
-                var isHoliday = false;
-                // Append the holiday data to the existing holidayData array
-                receivedHolidayData.forEach(function (holiday) {
-                    holidayData.push(holiday);
-                    // Extract the year from the start date of the holiday
-                    holidayYear = holiday.startDate.split("-")[0];
-                    //console.log("Holiday Year: ", holidayYear);
-                });
-                // Call function to handle holidays
-                handleHolidays(currentDate, isHoliday, currentCity); // Pass currentCity to handleHolidays
-            }
-        );
-    } else {
-        // If the holidayData array is already populated, proceed to handle holidays directly
-        var isHoliday = false;
-        handleHolidays(currentDate, isHoliday, currentCity);
-    }
+    Shelly.call(
+        "HTTP.GET",
+        {
+            url: holidaysURL,
+        },
+        function (startDateResult) {
+            var receivedHolidayData = JSON.parse(startDateResult.body);
 
-    // Check if it's outside of working hours
-    isWorkingHours = false;
-    if (onOffTimes[weekDay]) {
-        for (let i = 0; i < onOffTimes[weekDay].length; i++) {
-            if (currentTime >= onOffTimes[weekDay][i].on && currentTime <= onOffTimes[weekDay][i].off) {
-                isWorkingHours = true;
-                break;
+            receivedHolidayData.forEach(function (holiday) {
+                fetchedHolidays.push([holiday.name[0].text, holiday.startDate]);
+            });
+
+            // Call handleHolidays inside the HTTP GET callback
+            var isHoliday = false;
+            handleHolidays(currentDate, isHoliday, currentCity);
+
+            // Check if it's outside of working hours
+            var isWorkingHours = false;
+            if (onOffTimes[weekDay]) {
+                for (let i = 0; i < onOffTimes[weekDay].length; i++) {
+                    if (currentTime >= onOffTimes[weekDay][i].on && currentTime <= onOffTimes[weekDay][i].off) {
+                        isWorkingHours = true;
+                        break;
+                    }
+                }
+            }
+
+            // Enable manual control outside working hours if necessary
+            if (!isWorkingHours) {
+                manualControl = true;
+            } else {
+                manualControl = false;
             }
         }
-    }
-
-    // Enable manual control outside working hours if necessary
-    if (!isWorkingHours) {
-        manualControl = true;
-    } else {
-        manualControl = false;
-    }
+    );
 }
-
 function scheduledTask() {
     getMacAddress(url, function(macAddress) {
         fetchAndLogSchedule(macAddress);
