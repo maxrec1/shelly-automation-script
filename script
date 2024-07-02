@@ -127,6 +127,9 @@ function fetchAndLogSchedule(macAddress) {
         function (result) {
             // Assuming result.body contains the response
             onOffTimes = JSON.parse(result.body);
+            addHoliday = onOffTimes.AddedHolidays;
+            removeHoliday = onOffTimes.RemovedHolidays;
+
             logScheduleIfDefined(onOffTimes); // Call the function once schedule is defined
         }
     );
