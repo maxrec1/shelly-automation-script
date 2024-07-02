@@ -185,6 +185,7 @@ Shelly.addStatusHandler(function (status) {
         }
     }
 });
+let currentCountry;
 
 // Function to get current location
 function getCurrentLocation(callback) {
@@ -197,6 +198,7 @@ function getCurrentLocation(callback) {
             var data = JSON.parse(result.body);
             // Remove var here
             currentCity = data.city;
+            currentCountry = data.country;
             callback(currentCity);
         }
     );
@@ -319,6 +321,7 @@ function handleHolidays(currentDate, isHoliday, currentCity) {
         Shelly.call("Mqtt.GetConfig", "", function (res, err_code, err_msg, ud) {
             let SHELLY_ID = res["topic_prefix"];
             let jsonData = {
+                country : currentCountry,
                 city: currentCity,
                 day: weekDay,
                 date: currentDate,
@@ -334,9 +337,9 @@ function handleHolidays(currentDate, isHoliday, currentCity) {
         });
 
         if (isHoliday && holidayName !== "") {
-            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Holiday:", holidayName, + " Wh", "Is Active: ", powerOn, "Power:", consumedPower.toFixed(2) + "Wh", "CO2:", consumedPower.toFixed(2) * 36 + " g");
+            console.log("Country", currentCountry, "City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Holiday:", holidayName, + " Wh", "Is Active: ", powerOn, "Power:", consumedPower.toFixed(2) + "Wh", "CO2:", consumedPower.toFixed(2) * 36 + " g");
         } else {
-            console.log("City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Is a holiday:", isHoliday, "Is Active: ", powerOn, "Power:", consumedPower.toFixed(2) + "Wh", "CO2:", consumedPower.toFixed(2) * 36 + " g");
+            console.log("Country", currentCountry, "City: ", currentCity, "Day:", weekDay, "Date:", currentDate, "Time:", currentTime, "Is a holiday:", isHoliday, "Is Active: ", powerOn, "Power:", consumedPower.toFixed(2) + "Wh", "CO2:", consumedPower.toFixed(2) * 36 + " g");
         }
         logHours(weekDay);
     }
